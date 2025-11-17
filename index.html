@@ -548,6 +548,37 @@
             font-size: 11px;
             color: #aaa;
         }
+
+        /* Action Buttons */
+        #actionButtons {
+            position: absolute;
+            top: 80px;
+            right: 360px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .action-button {
+            width: 48px;
+            height: 48px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            color: #667eea;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .action-button:hover {
+            background: rgba(102, 126, 234, 0.2);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -583,6 +614,12 @@
     <div id="searchContainer">
         <input type="text" id="searchInput" placeholder="🔍 Search stars, planets, systems...">
         <div id="searchResults"></div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div id="actionButtons">
+        <button class="action-button" id="screenshotBtn" title="Take Screenshot (S)">📷</button>
+        <button class="action-button" id="fullscreenBtn" title="Toggle Fullscreen (F11)">⛶</button>
     </div>
 
     <!-- Control Panel -->
@@ -1021,12 +1058,14 @@
 
         // Create planets
         let planetGroup;
+        let planetMeshes = []; // Store planet meshes for animation
         function createPlanets(planets, stars) {
             if (planetGroup) {
                 scene.remove(planetGroup);
             }
 
             planetGroup = new THREE.Group();
+            planetMeshes = [];
 
             const starMap = {};
             stars.forEach(star => {
@@ -1043,17 +1082,39 @@
                 });
                 const sphere = new THREE.Mesh(geometry, material);
 
-                sphere.position.set(planet.x * 10, planet.y * 10, planet.z * 10);
-                sphere.userData = { ...planet, index };
+                // Store initial position and orbital data
+                const starPos = starMap[planet.star];
+                sphere.userData = {
+                    ...planet,
+                    index,
+                    starPos: starPos,
+                    orbitRadius: planet.orbit * 4.84814e-6 * 10,
+                    initialAngle: Math.random() * Math.PI * 2, // Random starting position
+                    angularVelocity: (2 * Math.PI) / planet.period // radians per day
+                };
+
+                // Set initial position
+                if (starPos) {
+                    const angle = sphere.userData.initialAngle;
+                    const orbitRadius = sphere.userData.orbitRadius;
+                    sphere.position.set(
+                        starPos.x + Math.cos(angle) * orbitRadius,
+                        starPos.y,
+                        starPos.z + Math.sin(angle) * orbitRadius
+                    );
+                } else {
+                    sphere.position.set(planet.x * 10, planet.y * 10, planet.z * 10);
+                }
+
+                planetMeshes.push(sphere);
                 planetGroup.add(sphere);
 
                 // Draw orbit
-                if (state.showOrbits && starMap[planet.star]) {
-                    const starPos = starMap[planet.star];
-                    const orbitRadius = planet.orbit * 4.84814e-6 * 10;
+                if (state.showOrbits && starPos) {
+                    const orbitRadius = sphere.userData.orbitRadius;
 
                     const orbitCurve = new THREE.EllipseCurve(
-                        starPos.x, starPos.y,
+                        starPos.x, starPos.z,
                         orbitRadius, orbitRadius,
                         0, 2 * Math.PI,
                         false, 0
@@ -1064,7 +1125,7 @@
                     const orbitPositions = [];
 
                     points.forEach(p => {
-                        orbitPositions.push(p.x, starPos.z, p.y);
+                        orbitPositions.push(p.x, starPos.y, p.y);
                     });
 
                     orbitGeometry.setAttribute('position', new THREE.Float32BufferAttribute(orbitPositions, 3));
@@ -1082,6 +1143,32 @@
 
             scene.add(planetGroup);
             return planetGroup;
+        }
+
+        // Update planet positions based on time
+        function updatePlanetOrbits() {
+            if (!state.isPlaying) return;
+
+            const timeScale = 0.01; // Scale factor for visible motion
+
+            planetMeshes.forEach(planetMesh => {
+                const userData = planetMesh.userData;
+                if (!userData.starPos || !userData.orbitRadius) return;
+
+                // Calculate current angle based on time
+                const angle = userData.initialAngle + (userData.angularVelocity * state.timeSpeed * timeScale);
+                userData.initialAngle = angle % (2 * Math.PI); // Keep angle in range
+
+                // Update position
+                const starPos = userData.starPos;
+                const orbitRadius = userData.orbitRadius;
+
+                planetMesh.position.set(
+                    starPos.x + Math.cos(angle) * orbitRadius,
+                    starPos.y,
+                    starPos.z + Math.sin(angle) * orbitRadius
+                );
+            });
         }
 
         // Create labels
@@ -1502,6 +1589,16 @@
                 case '?': // Show help
                     showKeyboardHelp();
                     break;
+
+                case 's': // Screenshot
+                    if (!event.ctrlKey && !event.metaKey) { // Avoid conflict with Ctrl+S
+                        takeScreenshot();
+                    }
+                    break;
+
+                case 'f11': // Fullscreen (browser default, but also add button support)
+                    // F11 is handled by browser, but we provide button alternative
+                    break;
             }
         });
 
@@ -1529,6 +1626,7 @@ Time Controls:
 
 Other:
   F       - Focus on search
+  S       - Take screenshot
   ESC     - Close info panel
   ?       - Show this help
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1536,6 +1634,65 @@ Other:
 
             alert(helpText);
         }
+
+        // Screenshot functionality
+        function takeScreenshot() {
+            // Render the scene at current quality
+            renderer.render(scene, camera);
+
+            // Convert canvas to data URL
+            const dataURL = renderer.domElement.toDataURL('image/png');
+
+            // Create download link
+            const link = document.createElement('a');
+            link.download = `galaxy-forge-${new Date().toISOString().split('T')[0]}.png`;
+            link.href = dataURL;
+            link.click();
+
+            // Visual feedback
+            const flash = document.createElement('div');
+            flash.style.position = 'fixed';
+            flash.style.top = '0';
+            flash.style.left = '0';
+            flash.style.width = '100%';
+            flash.style.height = '100%';
+            flash.style.backgroundColor = 'white';
+            flash.style.opacity = '0.8';
+            flash.style.pointerEvents = 'none';
+            flash.style.zIndex = '10000';
+            document.body.appendChild(flash);
+
+            setTimeout(() => {
+                flash.style.transition = 'opacity 0.3s';
+                flash.style.opacity = '0';
+                setTimeout(() => document.body.removeChild(flash), 300);
+            }, 50);
+        }
+
+        // Fullscreen functionality
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error('Error attempting to enable fullscreen:', err);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Update fullscreen button icon
+        document.addEventListener('fullscreenchange', () => {
+            const btn = document.getElementById('fullscreenBtn');
+            if (document.fullscreenElement) {
+                btn.textContent = '⛶'; // Exit fullscreen icon
+                btn.title = 'Exit Fullscreen (F11)';
+            } else {
+                btn.textContent = '⛶'; // Enter fullscreen icon
+                btn.title = 'Toggle Fullscreen (F11)';
+            }
+        });
 
         // UI Controls
         function setupUIControls() {
@@ -1680,6 +1837,7 @@ Other:
             requestAnimationFrame(animate);
             controls.update();
             updateTime();
+            updatePlanetOrbits(); // Animate planets along their orbits
             renderer.render(scene, camera);
         }
 
@@ -1730,6 +1888,10 @@ Other:
 
             // Setup help button
             document.getElementById('helpButton').addEventListener('click', showKeyboardHelp);
+
+            // Setup action buttons
+            document.getElementById('screenshotBtn').addEventListener('click', takeScreenshot);
+            document.getElementById('fullscreenBtn').addEventListener('click', toggleFullscreen);
 
             // Hide loading
             document.getElementById('loading').style.display = 'none';
