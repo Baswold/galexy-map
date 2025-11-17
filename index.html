@@ -39,10 +39,11 @@
     </style>
 </head>
 <body>
-    <div id="loading">Loading star data...</div>
+    <div id="loading">Loading astronomical data...</div>
     <div id="info">
-        <strong>Galaxy Forge - Real Star Map</strong><br>
-        <span id="starCount">0</span> stars loaded<br><br>
+        <strong>Galaxy Forge - Real Star & Planet Map</strong><br>
+        <span id="starCount">0</span> stars | <span id="planetCount">0</span> planets<br>
+        <span id="systemCount">0</span> planetary systems<br><br>
         <strong>Controls:</strong><br>
         • Drag to rotate<br>
         • Scroll to zoom<br>
@@ -149,6 +150,65 @@
             }
         }
 
+        // Load planet data
+        async function loadPlanetData() {
+            try {
+                const response = await fetch('data/planets.csv');
+                const csvText = await response.text();
+
+                const lines = csvText.split('\n');
+                const headers = lines[0].split(',');
+
+                // Find column indices
+                const nameIndex = headers.indexOf('name');
+                const starIndex = headers.indexOf('star');
+                const xIndex = headers.indexOf('x');
+                const yIndex = headers.indexOf('y');
+                const zIndex = headers.indexOf('z');
+                const orbitIndex = headers.indexOf('orbit_au');
+                const radiusIndex = headers.indexOf('radius_earth');
+                const typeIndex = headers.indexOf('type');
+
+                const planets = [];
+
+                // Parse CSV (skip header)
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+
+                    const cols = lines[i].split(',');
+
+                    const x = parseFloat(cols[xIndex]);
+                    const y = parseFloat(cols[yIndex]);
+                    const z = parseFloat(cols[zIndex]);
+                    const name = cols[nameIndex];
+                    const star = cols[starIndex];
+                    const orbit = parseFloat(cols[orbitIndex]);
+                    const radius = parseFloat(cols[radiusIndex]);
+                    const type = cols[typeIndex];
+
+                    if (!isNaN(x) && !isNaN(y) && !isNaN(z)) {
+                        planets.push({ x, y, z, name, star, orbit, radius, type });
+                    }
+                }
+
+                return planets;
+            } catch (error) {
+                console.error('Error loading planet data:', error);
+                return [];
+            }
+        }
+
+        // Get planet color based on type
+        function getPlanetColor(type) {
+            const colorMap = {
+                'terrestrial': 0x8b7355,      // Brown/rocky
+                'super_earth': 0x5588aa,      // Blue-gray
+                'gas_giant': 0xdaa520,        // Golden/orange
+                'ice_giant': 0x4682b4,        // Steel blue
+            };
+            return colorMap[type] || 0x888888;
+        }
+
         // Create star visualization
         function createStarField(stars) {
             const geometry = new THREE.BufferGeometry();
@@ -190,6 +250,70 @@
             return points;
         }
 
+        // Create planet visualization
+        function createPlanets(planets, stars) {
+            const planetGroup = new THREE.Group();
+
+            // Create a map of star names to positions for orbit drawing
+            const starMap = {};
+            stars.forEach(star => {
+                starMap[star.name] = { x: star.x * 10, y: star.y * 10, z: star.z * 10 };
+            });
+
+            planets.forEach(planet => {
+                // Create planet sphere
+                const radius = Math.max(0.5, Math.log(planet.radius + 1) * 0.3);
+                const geometry = new THREE.SphereGeometry(radius, 16, 16);
+                const material = new THREE.MeshBasicMaterial({
+                    color: getPlanetColor(planet.type),
+                    transparent: true,
+                    opacity: 0.9
+                });
+                const sphere = new THREE.Mesh(geometry, material);
+
+                // Position (scale to match stars)
+                sphere.position.set(planet.x * 10, planet.y * 10, planet.z * 10);
+                sphere.userData = planet; // Store planet data
+                planetGroup.add(sphere);
+
+                // Draw orbit path
+                if (starMap[planet.star]) {
+                    const starPos = starMap[planet.star];
+                    const orbitRadius = planet.orbit * 4.84814e-6 * 10; // AU to parsecs, scaled
+
+                    const orbitCurve = new THREE.EllipseCurve(
+                        starPos.x, starPos.y,  // Center
+                        orbitRadius, orbitRadius,  // X and Y radius
+                        0, 2 * Math.PI,  // Start and end angle
+                        false,
+                        0
+                    );
+
+                    const points = orbitCurve.getPoints(64);
+                    const orbitGeometry = new THREE.BufferGeometry();
+                    const orbitPositions = [];
+
+                    points.forEach(p => {
+                        orbitPositions.push(p.x, starPos.z, p.y);
+                    });
+
+                    orbitGeometry.setAttribute('position', new THREE.Float32BufferAttribute(orbitPositions, 3));
+
+                    const orbitMaterial = new THREE.LineBasicMaterial({
+                        color: 0x444444,
+                        transparent: true,
+                        opacity: 0.3
+                    });
+
+                    const orbitLine = new THREE.Line(orbitGeometry, orbitMaterial);
+                    planetGroup.add(orbitLine);
+                }
+            });
+
+            scene.add(planetGroup);
+            return planetGroup;
+        }
+
         // Update info display
         function updateInfo() {
             const pos = camera.position;
@@ -222,10 +346,21 @@
                 return;
             }
 
+            const planets = await loadPlanetData();
+
+            // Count unique star systems with planets
+            const systems = new Set(planets.map(p => p.star));
+
             document.getElementById('starCount').textContent = stars.length.toLocaleString();
+            document.getElementById('planetCount').textContent = planets.length.toLocaleString();
+            document.getElementById('systemCount').textContent = systems.size.toLocaleString();
             document.getElementById('loading').style.display = 'none';
 
             createStarField(stars);
+            if (planets.length > 0) {
+                createPlanets(planets, stars);
+            }
+
             animate();
         }
 

@@ -1,0 +1,22 @@
+name,star,x,y,z,orbit_au,period_days,radius_earth,mass_earth,type
+Mercury,Sol,3.8e-06,-1.44e-06,-9e-08,0.387,87.97,0.383,0.055,terrestrial
+Venus,Sol,4.45e-06,3.46e-06,-1e-07,0.723,224.7,0.949,0.815,terrestrial
+Earth,Sol,4.59e-06,-4.83e-06,9e-08,1.0,365.26,1.0,1.0,terrestrial
+Mars,Sol,1.075e-05,-4.63e-06,-3.1e-07,1.524,687.0,0.532,0.107,terrestrial
+Jupiter,Sol,-1.723e-05,1.187e-05,-1.19e-06,5.203,4331,11.21,317.8,gas_giant
+Saturn,Sol,1.405e-05,4.534e-05,2e-08,9.537,10747,9.45,95.2,gas_giant
+Uranus,Sol,9.671e-05,1.543e-05,-2.8e-06,19.191,30589,4.01,14.5,ice_giant
+Neptune,Sol,-8.077e-05,-0.00011787,6.6e-07,30.069,59800,3.88,17.1,ice_giant
+Proxima Centauri b,Proxima Centauri,-0.47382296,-0.36259277,-1.154984,0.0485,11.186,1.07,1.27,terrestrial
+Proxima Centauri d,Proxima Centauri,-0.47382295,-0.36259313,-1.15498401,0.029,5.122,0.81,0.26,terrestrial
+Epsilon Eridani b,Epsilon Eridani,1.90430065,2.54875257,-0.53001867,3.39,2502,11.0,254,gas_giant
+Tau Ceti e,Tau Ceti,3.1495296,1.5388542,-1.00097809,0.538,168,1.83,3.93,super_earth
+Tau Ceti f,Tau Ceti,3.14953437,1.53885107,-1.00097806,0.721,290,1.93,3.93,super_earth
+Tau Ceti g,Tau Ceti,3.14953569,1.53885509,-1.00097823,1.16,636,1.97,3.93,super_earth
+Tau Ceti h,Tau Ceti,3.14953474,1.53884669,-1.00097793,1.34,736,2.0,3.93,super_earth
+61 Cygni b,61 Cygni,1.98459286,-1.86855662,2.18785519,1.68,730,8.5,175,gas_giant
+Epsilon Indi Ab,Epsilon Indi,1.73492709,-0.96506129,-3.03186452,2.1,1500,10.2,190,gas_giant
+Barnard's Star b,Barnard's Star,-0.02002642,-1.82110465,0.14950701,0.404,233,1.4,3.2,super_earth
+Lalande 21185 b,Lalande 21185,-1.9962189,0.49696463,1.49280213,2.2,1560,9.8,180,gas_giant
+Fomalhaut b,Fomalhaut,6.45199296,-1.79993374,-3.80833169,115,320000,16,600,gas_giant
+Pollux b,Pollux,-4.05434124,8.19431938,4.86645764,1.64,589.64,10.8,854,gas_giant
