@@ -63,6 +63,7 @@ Time Controls:
 
 Other:
   F       - Focus on search
+  S       - Take screenshot
   ESC     - Close info panel
   ?       - Show help
 ```
@@ -123,11 +124,24 @@ Pre-configured viewpoints for:
 5. Nearby Stars - Local neighborhood
 6. Galactic View - Wide perspective
 
-### ⏰ Time Controls
+### 📸 Capture & View
+- **Screenshot Export** - Save high-quality PNG images
+  - Press 'S' or click camera button
+  - Automatic filename with date
+  - Visual flash feedback
+- **Fullscreen Mode** - Immersive viewing
+  - Toggle with button or F11
+  - Perfect for presentations
+  - Full browser window
+
+### ⏰ Time Controls & Animation
 - **Play/Pause** - Control time flow
 - **Speed Controls** - 0.125x to 32x speed
 - **Date Display** - Current date in simulation
-- **Future Enhancement**: Watch planets orbit in real-time
+- **Real Orbital Motion** - Planets orbit their stars in real-time!
+  - Based on actual orbital periods
+  - Speed scales with time controls
+  - Smooth, accurate animations
 
 ## 🌍 Real Systems You Can Explore
 
@@ -190,12 +204,27 @@ View traditional constellation patterns:
 
 ## 🎯 Future Enhancements
 
-Planned features:
-- **More Data**: Thousands of stars from Gaia catalog
-- **Real Orbital Motion**: Animate planets along their orbits
-- **Nebulae**: Add famous nebulae and deep space objects
-- **Distance Measurement**: Tools to measure distances between objects
-- **Screenshots**: Export high-resolution views
-- **VR Support**: Explore in virtual reality
-- **Galaxy Structure**: Milky Way arms and structure
-- **Mobile Optimization**: Better touch controls
+### Planned Features
+- **More Data**: Thousands of stars from Gaia DR3 catalog
+- **Nebulae & Deep Sky Objects**: Add famous nebulae (Orion, Crab, etc.)
+- **Distance Measurement Tools**: Interactive ruler for measuring distances
+- **Camera Path Recording**: Save and replay flight paths
+- **Asteroid Belt**: Add asteroid belt to Solar System
+- **Comet Trails**: Visualize comets with tails
+- **VR Support**: Full virtual reality mode with hand controllers
+- **Galaxy Structure**: Milky Way spiral arms visualization
+- **Binary Star Systems**: Proper orbital mechanics for binary pairs
+- **Stellar Evolution**: Show star lifecycle stages
+- **Mobile Optimization**: Touch gestures and mobile UI
+- **Multi-language Support**: Interface translations
+- **Educational Mode**: Guided tours with narration
+- **API Integration**: Real-time data from space telescopes
+
+### Completed Recently ✅
+- ✅ Real orbital motion for planets
+- ✅ Screenshot export functionality
+- ✅ Fullscreen viewing mode
+- ✅ Constellation patterns
+- ✅ Advanced filtering system
+- ✅ Comprehensive keyboard shortcuts
+- ✅ Guided tours system
