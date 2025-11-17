@@ -1,0 +1,141 @@
+[
+  {
+    "name": "Orion",
+    "lines": [
+      ["Betelgeuse", "Bellatrix"],
+      ["Bellatrix", "Rigel"],
+      ["Rigel", "Betelgeuse"],
+      ["Betelgeuse", "Alnilam"],
+      ["Alnilam", "Rigel"],
+      ["Alnilam", "Alnitak"],
+      ["Alnitak", "Mintaka"],
+      ["Mintaka", "Alnilam"]
+    ]
+  },
+  {
+    "name": "Ursa Major (Big Dipper)",
+    "lines": [
+      ["Dubhe", "Alkaid"],
+      ["Alioth", "Alkaid"],
+      ["Alioth", "Dubhe"]
+    ]
+  },
+  {
+    "name": "Canis Major",
+    "lines": [
+      ["Sirius", "Adhara"],
+      ["Adhara", "Wezen"],
+      ["Wezen", "Mirzam"],
+      ["Mirzam", "Sirius"]
+    ]
+  },
+  {
+    "name": "Taurus",
+    "lines": [
+      ["Aldebaran", "Elnath"]
+    ]
+  },
+  {
+    "name": "Gemini",
+    "lines": [
+      ["Castor", "Pollux"]
+    ]
+  },
+  {
+    "name": "Leo",
+    "lines": [
+      ["Regulus", "Algieba"],
+      ["Algieba", "Denebola"],
+      ["Denebola", "Regulus"]
+    ]
+  },
+  {
+    "name": "Virgo",
+    "lines": [
+      ["Spica", "Denebola"]
+    ]
+  },
+  {
+    "name": "Scorpius",
+    "lines": [
+      ["Antares", "Shaula"],
+      ["Shaula", "Sargas"]
+    ]
+  },
+  {
+    "name": "Aquila",
+    "lines": [
+      ["Altair", "Deneb"]
+    ]
+  },
+  {
+    "name": "Lyra",
+    "lines": [
+      ["Vega", "Altair"]
+    ]
+  },
+  {
+    "name": "Cygnus",
+    "lines": [
+      ["Deneb", "Sadr"],
+      ["Sadr", "Deneb"]
+    ]
+  },
+  {
+    "name": "Centaurus",
+    "lines": [
+      ["Alpha Centauri A", "Hadar"]
+    ]
+  },
+  {
+    "name": "Southern Cross",
+    "lines": [
+      ["Mimosa", "Hadar"]
+    ]
+  },
+  {
+    "name": "Bootes",
+    "lines": [
+      ["Arcturus", "Eltanin"]
+    ]
+  },
+  {
+    "name": "Auriga",
+    "lines": [
+      ["Capella", "Menkalinan"],
+      ["Menkalinan", "Elnath"]
+    ]
+  },
+  {
+    "name": "Carina",
+    "lines": [
+      ["Canopus", "Miaplacidus"],
+      ["Miaplacidus", "Avior"]
+    ]
+  },
+  {
+    "name": "Andromeda",
+    "lines": [
+      ["Alpheratz", "Mirach"],
+      ["Mirach", "Almach"]
+    ]
+  },
+  {
+    "name": "Pegasus",
+    "lines": [
+      ["Alpheratz", "Scheat"]
+    ]
+  },
+  {
+    "name": "Aries",
+    "lines": [
+      ["Hamal", "Alpheratz"]
+    ]
+  },
+  {
+    "name": "Sagittarius",
+    "lines": [
+      ["Kaus Australis", "Nunki"]
+    ]
+  }
+]

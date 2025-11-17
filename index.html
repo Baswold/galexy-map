@@ -5,51 +5,747 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Galaxy Forge - 3D Star Map</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             overflow: hidden;
             background: #000;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
         }
+
         canvas {
             display: block;
+            cursor: grab;
         }
-        #info {
+
+        canvas:active {
+            cursor: grabbing;
+        }
+
+        /* Top Info Bar */
+        #topBar {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            color: #fff;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 14px;
-            max-width: 300px;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 70%, transparent 100%);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
         }
+
+        #title {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        #stats {
+            display: flex;
+            gap: 25px;
+            font-size: 13px;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #aaa;
+            text-transform: uppercase;
+        }
+
+        /* Search Bar */
+        #searchContainer {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            z-index: 100;
+        }
+
+        #searchInput {
+            width: 300px;
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        #searchInput:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+
+        #searchResults {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            max-height: 400px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .search-result {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background 0.2s;
+        }
+
+        .search-result:hover {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .search-result-name {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .search-result-info {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        /* Control Panel */
+        #controlPanel {
+            position: absolute;
+            right: 20px;
+            top: 80px;
+            width: 320px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .panel-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .panel-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .panel-tab.active {
+            background: rgba(102, 126, 234, 0.2);
+            border-bottom: 2px solid #667eea;
+        }
+
+        .panel-tab:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .panel-content {
+            padding: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .panel-content.active {
+            display: block;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-label {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            text-align: right;
+            font-size: 13px;
+            color: #667eea;
+        }
+
+        .button {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .button-small {
+            padding: 8px;
+            font-size: 11px;
+        }
+
+        /* Info Panel */
+        #infoPanel {
+            position: absolute;
+            left: 20px;
+            bottom: 20px;
+            width: 350px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            z-index: 100;
+            display: none;
+        }
+
+        #infoPanel.visible {
+            display: block;
+            animation: slideInLeft 0.3s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .info-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .info-close {
+            cursor: pointer;
+            font-size: 24px;
+            color: #aaa;
+            transition: color 0.2s;
+        }
+
+        .info-close:hover {
+            color: #fff;
+        }
+
+        .info-type {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 4px;
+            font-size: 11px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .info-details {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .info-label {
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        .info-value {
+            color: #fff;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        /* Tooltip */
+        #tooltip {
+            position: absolute;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(102, 126, 234, 0.5);
+            border-radius: 6px;
+            font-size: 13px;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            white-space: nowrap;
+        }
+
+        /* Legend */
+        #legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            z-index: 100;
+        }
+
+        .legend-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        /* Loading */
         #loading {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: #fff;
-            font-size: 24px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.95);
+            padding: 40px 60px;
+            border-radius: 16px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(102, 126, 234, 0.2);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 18px;
+            color: #667eea;
+        }
+
+        /* Time Controls */
+        #timeControls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            z-index: 100;
+        }
+
+        .time-button {
+            width: 40px;
+            height: 40px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            color: #667eea;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .time-button:hover {
+            background: rgba(102, 126, 234, 0.4);
+            transform: scale(1.1);
+        }
+
+        .time-button.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .time-display {
+            font-size: 14px;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .time-date {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .time-speed {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 4px;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.7);
+        }
+
+        /* Bookmarks */
+        .bookmark-item {
+            padding: 10px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .bookmark-item:hover {
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateX(5px);
+        }
+
+        .bookmark-name {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .bookmark-desc {
+            font-size: 11px;
+            color: #aaa;
         }
     </style>
 </head>
 <body>
-    <div id="loading">Loading astronomical data...</div>
-    <div id="info">
-        <strong>Galaxy Forge - Real Star & Planet Map</strong><br>
-        <span id="starCount">0</span> stars | <span id="planetCount">0</span> planets<br>
-        <span id="systemCount">0</span> planetary systems<br><br>
-        <strong>Controls:</strong><br>
-        • Drag to rotate<br>
-        • Scroll to zoom<br>
-        • Right-drag to pan<br><br>
-        <span id="cameraPos"></span>
+    <!-- Loading Screen -->
+    <div id="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading astronomical data...</div>
     </div>
+
+    <!-- Top Bar -->
+    <div id="topBar">
+        <div id="title">⭐ Galaxy Forge</div>
+        <div id="stats">
+            <div class="stat">
+                <div class="stat-value" id="starCount">0</div>
+                <div class="stat-label">Stars</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="planetCount">0</div>
+                <div class="stat-label">Planets</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="systemCount">0</div>
+                <div class="stat-label">Systems</div>
+            </div>
+            <button id="helpButton" style="margin-left: 20px; padding: 8px 16px; background: rgba(102, 126, 234, 0.3); border: 1px solid rgba(102, 126, 234, 0.5); border-radius: 6px; color: #fff; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='rgba(102, 126, 234, 0.5)'" onmouseout="this.style.background='rgba(102, 126, 234, 0.3)'">
+                ❓ Help
+            </button>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div id="searchContainer">
+        <input type="text" id="searchInput" placeholder="🔍 Search stars, planets, systems...">
+        <div id="searchResults"></div>
+    </div>
+
+    <!-- Control Panel -->
+    <div id="controlPanel">
+        <div class="panel-tabs">
+            <div class="panel-tab active" data-tab="view">View</div>
+            <div class="panel-tab" data-tab="filters">Filters</div>
+            <div class="panel-tab" data-tab="bookmarks">Tours</div>
+        </div>
+
+        <div class="panel-content active" data-content="view">
+            <div class="control-group">
+                <div class="control-label">Display Options</div>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="showOrbits" checked>
+                        <span>Show Orbits</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="showLabels" checked>
+                        <span>Show Labels</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="showPlanets" checked>
+                        <span>Show Planets</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="showConstellations">
+                        <span>Constellation Lines</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">Star Size</div>
+                <div class="slider-group">
+                    <input type="range" id="starSize" class="slider" min="0.5" max="5" step="0.1" value="2">
+                    <div class="slider-value" id="starSizeValue">2.0x</div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">Planet Size</div>
+                <div class="slider-group">
+                    <input type="range" id="planetSize" class="slider" min="0.5" max="5" step="0.1" value="1">
+                    <div class="slider-value" id="planetSizeValue">1.0x</div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <button class="button" id="resetCamera">Reset Camera</button>
+            </div>
+        </div>
+
+        <div class="panel-content" data-content="filters">
+            <div class="control-group">
+                <div class="control-label">Star Types</div>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="star-filter" data-type="O" checked>
+                        <span>O - Blue Giants</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="star-filter" data-type="B" checked>
+                        <span>B - Blue-White</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="star-filter" data-type="A" checked>
+                        <span>A - White</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="star-filter" data-type="F" checked>
+                        <span>F - Yellow-White</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="star-filter" data-type="G" checked>
+                        <span>G - Yellow (Sun-like)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="star-filter" data-type="K" checked>
+                        <span>K - Orange</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="star-filter" data-type="M" checked>
+                        <span>M - Red Dwarfs</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">Distance Filter (Light Years)</div>
+                <div class="slider-group">
+                    <input type="range" id="maxDistance" class="slider" min="10" max="3000" step="10" value="3000">
+                    <div class="slider-value" id="maxDistanceValue">3000 ly</div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <button class="button" id="applyFilters">Apply Filters</button>
+            </div>
+        </div>
+
+        <div class="panel-content" data-content="bookmarks">
+            <div class="control-group">
+                <div class="control-label">Guided Tours</div>
+                <div id="bookmarksList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Panel -->
+    <div id="infoPanel">
+        <div class="info-header">
+            <div class="info-title" id="infoName">Object Name</div>
+            <div class="info-close" id="closeInfo">×</div>
+        </div>
+        <div class="info-type" id="infoType">Star</div>
+        <div class="info-details" id="infoDetails"></div>
+    </div>
+
+    <!-- Time Controls -->
+    <div id="timeControls">
+        <button class="time-button" id="timeRewind" title="Rewind">⏪</button>
+        <button class="time-button" id="timePause" title="Pause">⏸</button>
+        <button class="time-button active" id="timePlay" title="Play">▶</button>
+        <button class="time-button" id="timeFastForward" title="Fast Forward">⏩</button>
+        <div class="time-display">
+            <div class="time-date" id="currentDate">January 1, 2025</div>
+            <div class="time-speed" id="timeSpeedDisplay">1x Speed</div>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div id="legend">
+        <div class="legend-title">Star Types</div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #9bb0ff; box-shadow: 0 0 10px #9bb0ff;"></div>
+            <span>O/B - Blue Giants</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #cad7ff; box-shadow: 0 0 10px #cad7ff;"></div>
+            <span>A - White Stars</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #f8f7ff; box-shadow: 0 0 10px #f8f7ff;"></div>
+            <span>F - Yellow-White</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #fff4ea; box-shadow: 0 0 10px #fff4ea;"></div>
+            <span>G - Yellow (Sun)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ffd2a1; box-shadow: 0 0 10px #ffd2a1;"></div>
+            <span>K - Orange Stars</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ffcc6f; box-shadow: 0 0 10px #ffcc6f;"></div>
+            <span>M - Red Dwarfs</span>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip"></div>
 
     <script type="importmap">
     {
@@ -64,12 +760,35 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+        // Global state
+        const state = {
+            stars: [],
+            planets: [],
+            constellations: [],
+            selectedObject: null,
+            hoveredObject: null,
+            timeSpeed: 1,
+            isPlaying: true,
+            currentDate: new Date(2025, 0, 1),
+            starSizeMultiplier: 2,
+            planetSizeMultiplier: 1,
+            showOrbits: true,
+            showLabels: true,
+            showPlanets: true,
+            showConstellations: false,
+            starFilters: { O: true, B: true, A: true, F: true, G: true, K: true, M: true, D: true },
+            maxDistance: 3000
+        };
+
         // Scene setup
         const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x000000, 0.00015);
+
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
         document.body.appendChild(renderer.domElement);
 
         // Camera controls
@@ -78,32 +797,75 @@
         controls.dampingFactor = 0.05;
         controls.maxDistance = 50000;
         controls.minDistance = 1;
+        controls.zoomSpeed = 1.5;
 
         // Set initial camera position
         camera.position.set(0, 100, 200);
         controls.update();
 
-        // Add ambient light for better visibility
-        const ambientLight = new THREE.AmbientLight(0x333333);
+        // Raycaster for interaction
+        const raycaster = new THREE.Raycaster();
+        raycaster.params.Points.threshold = 2;
+        const mouse = new THREE.Vector2();
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
         scene.add(ambientLight);
 
-        // Function to convert spectral class to color
+        const pointLight = new THREE.PointLight(0xffffff, 1, 10000);
+        pointLight.position.set(0, 0, 0);
+        scene.add(pointLight);
+
+        // Create starfield background
+        function createStarfieldBackground() {
+            const starsGeometry = new THREE.BufferGeometry();
+            const starsMaterial = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.7,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            const starsVertices = [];
+            for (let i = 0; i < 10000; i++) {
+                const x = (Math.random() - 0.5) * 20000;
+                const y = (Math.random() - 0.5) * 20000;
+                const z = (Math.random() - 0.5) * 20000;
+                starsVertices.push(x, y, z);
+            }
+
+            starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
+            const starField = new THREE.Points(starsGeometry, starsMaterial);
+            scene.add(starField);
+        }
+
+        // Color functions
         function getStarColor(spectralClass) {
             if (!spectralClass) return 0xffffff;
             const type = spectralClass.charAt(0).toUpperCase();
 
-            // Based on actual stellar spectral classifications
             const colorMap = {
-                'O': 0x9bb0ff, // Blue
-                'B': 0xaabfff, // Blue-white
-                'A': 0xcad7ff, // White
-                'F': 0xf8f7ff, // Yellow-white
-                'G': 0xfff4ea, // Yellow (like our Sun)
-                'K': 0xffd2a1, // Orange
-                'M': 0xffcc6f, // Red-orange
+                'O': 0x9bb0ff,
+                'B': 0xaabfff,
+                'A': 0xcad7ff,
+                'F': 0xf8f7ff,
+                'G': 0xfff4ea,
+                'K': 0xffd2a1,
+                'M': 0xffcc6f,
+                'D': 0xffffff // White dwarfs
             };
 
             return colorMap[type] || 0xffffff;
+        }
+
+        function getPlanetColor(type) {
+            const colorMap = {
+                'terrestrial': 0x8b7355,
+                'super_earth': 0x5588aa,
+                'gas_giant': 0xdaa520,
+                'ice_giant': 0x4682b4,
+            };
+            return colorMap[type] || 0x888888;
         }
 
         // Load star data
@@ -111,35 +873,37 @@
             try {
                 const response = await fetch('data/hygdata_v3.csv');
                 const csvText = await response.text();
-
                 const lines = csvText.split('\n');
                 const headers = lines[0].split(',');
 
-                // Find column indices
                 const xIndex = headers.indexOf('x');
                 const yIndex = headers.indexOf('y');
                 const zIndex = headers.indexOf('z');
                 const magIndex = headers.indexOf('mag');
                 const specIndex = headers.indexOf('spect');
                 const properNameIndex = headers.indexOf('proper');
+                const distIndex = headers.indexOf('dist');
 
                 const stars = [];
 
-                // Parse CSV (skip header)
                 for (let i = 1; i < lines.length; i++) {
                     if (!lines[i].trim()) continue;
 
                     const cols = lines[i].split(',');
-
                     const x = parseFloat(cols[xIndex]);
                     const y = parseFloat(cols[yIndex]);
                     const z = parseFloat(cols[zIndex]);
                     const mag = parseFloat(cols[magIndex]);
                     const spect = cols[specIndex];
                     const name = cols[properNameIndex];
+                    const dist = parseFloat(cols[distIndex]);
 
                     if (!isNaN(x) && !isNaN(y) && !isNaN(z)) {
-                        stars.push({ x, y, z, mag, spect, name });
+                        stars.push({
+                            x, y, z, mag, spect, name,
+                            dist: dist || Math.sqrt(x*x + y*y + z*z),
+                            type: 'star'
+                        });
                     }
                 }
 
@@ -155,11 +919,9 @@
             try {
                 const response = await fetch('data/planets.csv');
                 const csvText = await response.text();
-
                 const lines = csvText.split('\n');
                 const headers = lines[0].split(',');
 
-                // Find column indices
                 const nameIndex = headers.indexOf('name');
                 const starIndex = headers.indexOf('star');
                 const xIndex = headers.indexOf('x');
@@ -168,15 +930,15 @@
                 const orbitIndex = headers.indexOf('orbit_au');
                 const radiusIndex = headers.indexOf('radius_earth');
                 const typeIndex = headers.indexOf('type');
+                const periodIndex = headers.indexOf('period_days');
+                const massIndex = headers.indexOf('mass_earth');
 
                 const planets = [];
 
-                // Parse CSV (skip header)
                 for (let i = 1; i < lines.length; i++) {
                     if (!lines[i].trim()) continue;
 
                     const cols = lines[i].split(',');
-
                     const x = parseFloat(cols[xIndex]);
                     const y = parseFloat(cols[yIndex]);
                     const z = parseFloat(cols[zIndex]);
@@ -185,9 +947,14 @@
                     const orbit = parseFloat(cols[orbitIndex]);
                     const radius = parseFloat(cols[radiusIndex]);
                     const type = cols[typeIndex];
+                    const period = parseFloat(cols[periodIndex]);
+                    const mass = parseFloat(cols[massIndex]);
 
                     if (!isNaN(x) && !isNaN(y) && !isNaN(z)) {
-                        planets.push({ x, y, z, name, star, orbit, radius, type });
+                        planets.push({
+                            x, y, z, name, star, orbit, radius, type, period, mass,
+                            type_obj: 'planet'
+                        });
                     }
                 }
 
@@ -198,43 +965,44 @@
             }
         }
 
-        // Get planet color based on type
-        function getPlanetColor(type) {
-            const colorMap = {
-                'terrestrial': 0x8b7355,      // Brown/rocky
-                'super_earth': 0x5588aa,      // Blue-gray
-                'gas_giant': 0xdaa520,        // Golden/orange
-                'ice_giant': 0x4682b4,        // Steel blue
-            };
-            return colorMap[type] || 0x888888;
+        // Load constellation data
+        async function loadConstellationData() {
+            try {
+                const response = await fetch('data/constellations.json');
+                const constellations = await response.json();
+                return constellations;
+            } catch (error) {
+                console.error('Error loading constellation data:', error);
+                return [];
+            }
         }
 
-        // Create star visualization
+        // Create star field
+        let starPoints;
         function createStarField(stars) {
+            if (starPoints) {
+                scene.remove(starPoints);
+            }
+
             const geometry = new THREE.BufferGeometry();
             const positions = [];
             const colors = [];
             const sizes = [];
 
             stars.forEach(star => {
-                // Position (scale coordinates for better visibility)
                 positions.push(star.x * 10, star.y * 10, star.z * 10);
 
-                // Color based on spectral class
                 const color = new THREE.Color(getStarColor(star.spect));
                 colors.push(color.r, color.g, color.b);
 
-                // Size based on apparent magnitude (brighter = bigger)
-                // Magnitude scale is inverted (lower = brighter)
                 const brightness = Math.max(0.5, 8 - star.mag);
-                sizes.push(brightness);
+                sizes.push(brightness * state.starSizeMultiplier);
             });
 
             geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
             geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
             geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
 
-            // Custom shader material for better star rendering
             const material = new THREE.PointsMaterial({
                 size: 2,
                 vertexColors: true,
@@ -244,25 +1012,29 @@
                 blending: THREE.AdditiveBlending
             });
 
-            const points = new THREE.Points(geometry, material);
-            scene.add(points);
+            starPoints = new THREE.Points(geometry, material);
+            starPoints.userData.objects = stars;
+            scene.add(starPoints);
 
-            return points;
+            return starPoints;
         }
 
-        // Create planet visualization
+        // Create planets
+        let planetGroup;
         function createPlanets(planets, stars) {
-            const planetGroup = new THREE.Group();
+            if (planetGroup) {
+                scene.remove(planetGroup);
+            }
 
-            // Create a map of star names to positions for orbit drawing
+            planetGroup = new THREE.Group();
+
             const starMap = {};
             stars.forEach(star => {
                 starMap[star.name] = { x: star.x * 10, y: star.y * 10, z: star.z * 10 };
             });
 
-            planets.forEach(planet => {
-                // Create planet sphere
-                const radius = Math.max(0.5, Math.log(planet.radius + 1) * 0.3);
+            planets.forEach((planet, index) => {
+                const radius = Math.max(0.5, Math.log(planet.radius + 1) * 0.3) * state.planetSizeMultiplier;
                 const geometry = new THREE.SphereGeometry(radius, 16, 16);
                 const material = new THREE.MeshBasicMaterial({
                     color: getPlanetColor(planet.type),
@@ -271,22 +1043,20 @@
                 });
                 const sphere = new THREE.Mesh(geometry, material);
 
-                // Position (scale to match stars)
                 sphere.position.set(planet.x * 10, planet.y * 10, planet.z * 10);
-                sphere.userData = planet; // Store planet data
+                sphere.userData = { ...planet, index };
                 planetGroup.add(sphere);
 
-                // Draw orbit path
-                if (starMap[planet.star]) {
+                // Draw orbit
+                if (state.showOrbits && starMap[planet.star]) {
                     const starPos = starMap[planet.star];
-                    const orbitRadius = planet.orbit * 4.84814e-6 * 10; // AU to parsecs, scaled
+                    const orbitRadius = planet.orbit * 4.84814e-6 * 10;
 
                     const orbitCurve = new THREE.EllipseCurve(
-                        starPos.x, starPos.y,  // Center
-                        orbitRadius, orbitRadius,  // X and Y radius
-                        0, 2 * Math.PI,  // Start and end angle
-                        false,
-                        0
+                        starPos.x, starPos.y,
+                        orbitRadius, orbitRadius,
+                        0, 2 * Math.PI,
+                        false, 0
                     );
 
                     const points = orbitCurve.getPoints(64);
@@ -314,22 +1084,606 @@
             return planetGroup;
         }
 
-        // Update info display
-        function updateInfo() {
-            const pos = camera.position;
-            document.getElementById('cameraPos').textContent =
-                `Position: (${pos.x.toFixed(1)}, ${pos.y.toFixed(1)}, ${pos.z.toFixed(1)})`;
+        // Create labels
+        let labelSprites = [];
+        function createLabels(objects) {
+            // Clear existing labels
+            labelSprites.forEach(sprite => scene.remove(sprite));
+            labelSprites = [];
+
+            if (!state.showLabels) return;
+
+            objects.forEach(obj => {
+                if (!obj.name) return;
+
+                // Only label notable stars or all planets
+                const isNotable = obj.type === 'star' && obj.mag < 2.5;
+                const isPlanet = obj.type_obj === 'planet';
+
+                if (!isNotable && !isPlanet) return;
+
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = 256;
+                canvas.height = 64;
+
+                context.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                context.fillRect(0, 0, canvas.width, canvas.height);
+
+                context.font = 'Bold 20px Arial';
+                context.fillStyle = '#ffffff';
+                context.textAlign = 'center';
+                context.textBaseline = 'middle';
+                context.fillText(obj.name, canvas.width / 2, canvas.height / 2);
+
+                const texture = new THREE.CanvasTexture(canvas);
+                const spriteMaterial = new THREE.SpriteMaterial({
+                    map: texture,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const sprite = new THREE.Sprite(spriteMaterial);
+
+                sprite.position.set(obj.x * 10, obj.y * 10 + 5, obj.z * 10);
+                sprite.scale.set(15, 5, 1);
+
+                scene.add(sprite);
+                labelSprites.push(sprite);
+            });
+        }
+
+        // Create constellation lines
+        let constellationGroup;
+        function createConstellations(constellations, stars) {
+            // Remove existing constellations
+            if (constellationGroup) {
+                scene.remove(constellationGroup);
+            }
+
+            if (!state.showConstellations) return;
+
+            constellationGroup = new THREE.Group();
+
+            // Create a map of star names to positions
+            const starMap = {};
+            stars.forEach(star => {
+                if (star.name) {
+                    starMap[star.name] = { x: star.x * 10, y: star.y * 10, z: star.z * 10 };
+                }
+            });
+
+            // Draw constellation lines
+            constellations.forEach(constellation => {
+                constellation.lines.forEach(line => {
+                    const [star1Name, star2Name] = line;
+                    const star1Pos = starMap[star1Name];
+                    const star2Pos = starMap[star2Name];
+
+                    if (star1Pos && star2Pos) {
+                        const points = [];
+                        points.push(new THREE.Vector3(star1Pos.x, star1Pos.y, star1Pos.z));
+                        points.push(new THREE.Vector3(star2Pos.x, star2Pos.y, star2Pos.z));
+
+                        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                        const material = new THREE.LineBasicMaterial({
+                            color: 0x667eea,
+                            transparent: true,
+                            opacity: 0.5,
+                            linewidth: 2
+                        });
+
+                        const constellationLine = new THREE.Line(geometry, material);
+                        constellationGroup.add(constellationLine);
+                    }
+                });
+            });
+
+            scene.add(constellationGroup);
+            console.log(`Created ${constellationGroup.children.length} constellation lines`);
+        }
+
+        // Bookmarks/Tours
+        const bookmarks = [
+            { name: 'Solar System', desc: 'Our home', position: { x: 0, y: 10, z: 30 } },
+            { name: 'Alpha Centauri', desc: 'Nearest star system', position: { x: -10.88, y: -38.34, z: 7.92 } },
+            { name: 'Sirius', desc: 'Brightest star', position: { x: -25, y: -62, z: 40 } },
+            { name: 'Betelgeuse', desc: 'Red supergiant', position: { x: 1720, y: 260, z: 980 } },
+            { name: 'Nearby Stars', desc: 'Stars within 20 ly', position: { x: 0, y: 50, z: 100 } },
+            { name: 'Galactic View', desc: 'Wide perspective', position: { x: 0, y: 500, z: 1000 } }
+        ];
+
+        function setupBookmarks() {
+            const bookmarksList = document.getElementById('bookmarksList');
+            bookmarksList.innerHTML = '';
+
+            bookmarks.forEach(bookmark => {
+                const item = document.createElement('div');
+                item.className = 'bookmark-item';
+                item.innerHTML = `
+                    <div class="bookmark-name">${bookmark.name}</div>
+                    <div class="bookmark-desc">${bookmark.desc}</div>
+                `;
+                item.addEventListener('click', () => {
+                    camera.position.set(bookmark.position.x, bookmark.position.y, bookmark.position.z);
+                    controls.target.set(0, 0, 0);
+                    controls.update();
+                });
+                bookmarksList.appendChild(item);
+            });
+        }
+
+        // Search functionality
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+
+                if (query.length < 2) {
+                    searchResults.style.display = 'none';
+                    return;
+                }
+
+                const allObjects = [...state.stars, ...state.planets];
+                const matches = allObjects.filter(obj =>
+                    obj.name && obj.name.toLowerCase().includes(query)
+                ).slice(0, 10);
+
+                if (matches.length === 0) {
+                    searchResults.style.display = 'none';
+                    return;
+                }
+
+                searchResults.innerHTML = matches.map(obj => {
+                    const type = obj.type_obj === 'planet' ? 'Planet' : 'Star';
+                    const info = obj.type_obj === 'planet'
+                        ? `${obj.star} system`
+                        : `${obj.spect || 'Unknown'} • ${obj.dist.toFixed(1)} pc`;
+
+                    return `
+                        <div class="search-result" data-object="${obj.name}">
+                            <div class="search-result-name">${obj.name}</div>
+                            <div class="search-result-info">${type} • ${info}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                searchResults.style.display = 'block';
+
+                // Add click handlers
+                searchResults.querySelectorAll('.search-result').forEach(result => {
+                    result.addEventListener('click', () => {
+                        const objectName = result.getAttribute('data-object');
+                        const obj = allObjects.find(o => o.name === objectName);
+                        if (obj) {
+                            focusOnObject(obj);
+                            showInfo(obj);
+                            searchResults.style.display = 'none';
+                            searchInput.value = '';
+                        }
+                    });
+                });
+            });
+
+            // Close search results when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!searchContainer.contains(e.target)) {
+                    searchResults.style.display = 'none';
+                }
+            });
+        }
+
+        function focusOnObject(obj) {
+            const targetPos = new THREE.Vector3(obj.x * 10, obj.y * 10, obj.z * 10);
+            const cameraOffset = new THREE.Vector3(0, 10, 30);
+
+            camera.position.copy(targetPos).add(cameraOffset);
+            controls.target.copy(targetPos);
+            controls.update();
+        }
+
+        // Info panel
+        function showInfo(obj) {
+            const infoPanel = document.getElementById('infoPanel');
+            const infoName = document.getElementById('infoName');
+            const infoType = document.getElementById('infoType');
+            const infoDetails = document.getElementById('infoDetails');
+
+            infoPanel.classList.add('visible');
+            infoName.textContent = obj.name || 'Unknown';
+
+            if (obj.type_obj === 'planet') {
+                infoType.textContent = 'Planet';
+                infoDetails.innerHTML = `
+                    <div class="info-row">
+                        <span class="info-label">Type</span>
+                        <span class="info-value">${obj.type.replace('_', ' ')}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Star System</span>
+                        <span class="info-value">${obj.star}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Orbital Distance</span>
+                        <span class="info-value">${obj.orbit.toFixed(3)} AU</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Orbital Period</span>
+                        <span class="info-value">${obj.period.toFixed(1)} days</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Radius</span>
+                        <span class="info-value">${obj.radius.toFixed(2)} × Earth</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Mass</span>
+                        <span class="info-value">${obj.mass.toFixed(2)} × Earth</span>
+                    </div>
+                `;
+            } else {
+                infoType.textContent = 'Star';
+                const distLY = (obj.dist / 0.306601).toFixed(2);
+                infoDetails.innerHTML = `
+                    <div class="info-row">
+                        <span class="info-label">Spectral Class</span>
+                        <span class="info-value">${obj.spect || 'Unknown'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Apparent Magnitude</span>
+                        <span class="info-value">${obj.mag.toFixed(2)}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Distance</span>
+                        <span class="info-value">${distLY} ly (${obj.dist.toFixed(2)} pc)</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Position (X, Y, Z)</span>
+                        <span class="info-value">${obj.x.toFixed(2)}, ${obj.y.toFixed(2)}, ${obj.z.toFixed(2)} pc</span>
+                    </div>
+                `;
+            }
+
+            state.selectedObject = obj;
+        }
+
+        document.getElementById('closeInfo').addEventListener('click', () => {
+            document.getElementById('infoPanel').classList.remove('visible');
+            state.selectedObject = null;
+        });
+
+        // Mouse interaction
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            // Check stars
+            if (starPoints) {
+                const intersects = raycaster.intersectObject(starPoints);
+                if (intersects.length > 0) {
+                    const index = intersects[0].index;
+                    const star = state.stars[index];
+                    showTooltip(event, star.name || `Star #${index}`);
+                    state.hoveredObject = star;
+                    renderer.domElement.style.cursor = 'pointer';
+                    return;
+                }
+            }
+
+            // Check planets
+            if (planetGroup && state.showPlanets) {
+                const intersects = raycaster.intersectObjects(planetGroup.children.filter(c => c.type === 'Mesh'));
+                if (intersects.length > 0) {
+                    const planet = intersects[0].object.userData;
+                    showTooltip(event, planet.name || 'Unknown Planet');
+                    state.hoveredObject = planet;
+                    renderer.domElement.style.cursor = 'pointer';
+                    return;
+                }
+            }
+
+            hideTooltip();
+            state.hoveredObject = null;
+            renderer.domElement.style.cursor = 'grab';
+        }
+
+        function onMouseClick(event) {
+            if (state.hoveredObject) {
+                showInfo(state.hoveredObject);
+                focusOnObject(state.hoveredObject);
+            }
+        }
+
+        function showTooltip(event, text) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.textContent = text;
+            tooltip.style.display = 'block';
+            tooltip.style.left = event.clientX + 15 + 'px';
+            tooltip.style.top = event.clientY + 15 + 'px';
+        }
+
+        function hideTooltip() {
+            document.getElementById('tooltip').style.display = 'none';
+        }
+
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('click', onMouseClick);
+
+        // Keyboard shortcuts
+        window.addEventListener('keydown', (event) => {
+            switch(event.key.toLowerCase()) {
+                case 'h': // Home - Solar System
+                    camera.position.set(0, 10, 30);
+                    controls.target.set(0, 0, 0);
+                    controls.update();
+                    break;
+
+                case 'r': // Reset camera
+                    camera.position.set(0, 100, 200);
+                    controls.target.set(0, 0, 0);
+                    controls.update();
+                    break;
+
+                case 'o': // Toggle orbits
+                    document.getElementById('showOrbits').click();
+                    break;
+
+                case 'l': // Toggle labels
+                    document.getElementById('showLabels').click();
+                    break;
+
+                case 'p': // Toggle planets
+                    document.getElementById('showPlanets').click();
+                    break;
+
+                case 'c': // Toggle constellations
+                    document.getElementById('showConstellations').click();
+                    break;
+
+                case 'f': // Focus on search
+                    event.preventDefault();
+                    document.getElementById('searchInput').focus();
+                    break;
+
+                case 'escape': // Close info panel
+                    document.getElementById('infoPanel').classList.remove('visible');
+                    break;
+
+                case ' ': // Space - Pause/Play time
+                    event.preventDefault();
+                    if (state.isPlaying) {
+                        document.getElementById('timePause').click();
+                    } else {
+                        document.getElementById('timePlay').click();
+                    }
+                    break;
+
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                    // Number keys 1-6 for bookmarks
+                    const bookmarkIndex = parseInt(event.key) - 1;
+                    if (bookmarkIndex < bookmarks.length) {
+                        const bookmark = bookmarks[bookmarkIndex];
+                        camera.position.set(bookmark.position.x, bookmark.position.y, bookmark.position.z);
+                        controls.target.set(0, 0, 0);
+                        controls.update();
+                    }
+                    break;
+
+                case '+':
+                case '=': // Increase time speed
+                    document.getElementById('timeFastForward').click();
+                    break;
+
+                case '-': // Decrease time speed
+                    document.getElementById('timeRewind').click();
+                    break;
+
+                case 'arrowup': // Increase star size
+                    event.preventDefault();
+                    const starSlider = document.getElementById('starSize');
+                    starSlider.value = Math.min(5, parseFloat(starSlider.value) + 0.1);
+                    starSlider.dispatchEvent(new Event('input'));
+                    break;
+
+                case 'arrowdown': // Decrease star size
+                    event.preventDefault();
+                    const starSlider2 = document.getElementById('starSize');
+                    starSlider2.value = Math.max(0.5, parseFloat(starSlider2.value) - 0.1);
+                    starSlider2.dispatchEvent(new Event('input'));
+                    break;
+
+                case '?': // Show help
+                    showKeyboardHelp();
+                    break;
+            }
+        });
+
+        // Show keyboard shortcuts help
+        function showKeyboardHelp() {
+            const helpText = `
+Keyboard Shortcuts:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Navigation:
+  H       - Go to Solar System
+  R       - Reset camera view
+  1-6     - Jump to tour bookmarks
+
+View Controls:
+  O       - Toggle orbital paths
+  L       - Toggle labels
+  P       - Toggle planets
+  C       - Toggle constellations
+  ↑/↓     - Adjust star size
+
+Time Controls:
+  SPACE   - Pause/Play time
+  +       - Speed up time
+  -       - Slow down time
+
+Other:
+  F       - Focus on search
+  ESC     - Close info panel
+  ?       - Show this help
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            `;
+
+            alert(helpText);
+        }
+
+        // UI Controls
+        function setupUIControls() {
+            // Tabs
+            document.querySelectorAll('.panel-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.panel-content').forEach(c => c.classList.remove('active'));
+
+                    tab.classList.add('active');
+                    const contentId = tab.getAttribute('data-tab');
+                    document.querySelector(`[data-content="${contentId}"]`).classList.add('active');
+                });
+            });
+
+            // Display options
+            document.getElementById('showOrbits').addEventListener('change', (e) => {
+                state.showOrbits = e.target.checked;
+                createPlanets(state.planets, state.stars);
+            });
+
+            document.getElementById('showLabels').addEventListener('change', (e) => {
+                state.showLabels = e.target.checked;
+                createLabels([...state.stars, ...state.planets]);
+            });
+
+            document.getElementById('showPlanets').addEventListener('change', (e) => {
+                state.showPlanets = e.target.checked;
+                if (planetGroup) {
+                    planetGroup.visible = e.target.checked;
+                }
+            });
+
+            document.getElementById('showConstellations').addEventListener('change', (e) => {
+                state.showConstellations = e.target.checked;
+                createConstellations(state.constellations, state.stars);
+            });
+
+            // Star size
+            document.getElementById('starSize').addEventListener('input', (e) => {
+                state.starSizeMultiplier = parseFloat(e.target.value);
+                document.getElementById('starSizeValue').textContent = state.starSizeMultiplier.toFixed(1) + 'x';
+                createStarField(state.stars);
+            });
+
+            // Planet size
+            document.getElementById('planetSize').addEventListener('input', (e) => {
+                state.planetSizeMultiplier = parseFloat(e.target.value);
+                document.getElementById('planetSizeValue').textContent = state.planetSizeMultiplier.toFixed(1) + 'x';
+                createPlanets(state.planets, state.stars);
+            });
+
+            // Distance filter
+            document.getElementById('maxDistance').addEventListener('input', (e) => {
+                state.maxDistance = parseInt(e.target.value);
+                document.getElementById('maxDistanceValue').textContent = state.maxDistance + ' ly';
+            });
+
+            // Reset camera
+            document.getElementById('resetCamera').addEventListener('click', () => {
+                camera.position.set(0, 100, 200);
+                controls.target.set(0, 0, 0);
+                controls.update();
+            });
+
+            // Apply filters
+            document.getElementById('applyFilters').addEventListener('click', () => {
+                // Update star type filters
+                document.querySelectorAll('.star-filter').forEach(cb => {
+                    const type = cb.getAttribute('data-type');
+                    state.starFilters[type] = cb.checked;
+                });
+
+                // Filter stars
+                const maxDistPC = state.maxDistance * 0.306601;
+                const filteredStars = state.stars.filter(star => {
+                    const type = star.spect ? star.spect.charAt(0).toUpperCase() : 'M';
+                    return state.starFilters[type] && star.dist <= maxDistPC;
+                });
+
+                createStarField(filteredStars);
+            });
+        }
+
+        // Time controls
+        function setupTimeControls() {
+            document.getElementById('timePlay').addEventListener('click', () => {
+                state.isPlaying = true;
+                state.timeSpeed = 1;
+                updateTimeButtons();
+            });
+
+            document.getElementById('timePause').addEventListener('click', () => {
+                state.isPlaying = false;
+                state.timeSpeed = 0;
+                updateTimeButtons();
+            });
+
+            document.getElementById('timeFastForward').addEventListener('click', () => {
+                state.isPlaying = true;
+                state.timeSpeed *= 2;
+                if (state.timeSpeed > 32) state.timeSpeed = 32;
+                updateTimeButtons();
+            });
+
+            document.getElementById('timeRewind').addEventListener('click', () => {
+                state.isPlaying = true;
+                state.timeSpeed /= 2;
+                if (state.timeSpeed < 0.125) state.timeSpeed = 0.125;
+                updateTimeButtons();
+            });
+        }
+
+        function updateTimeButtons() {
+            document.querySelectorAll('.time-button').forEach(btn => btn.classList.remove('active'));
+
+            if (state.isPlaying && state.timeSpeed === 1) {
+                document.getElementById('timePlay').classList.add('active');
+            } else if (!state.isPlaying) {
+                document.getElementById('timePause').classList.add('active');
+            } else if (state.timeSpeed > 1) {
+                document.getElementById('timeFastForward').classList.add('active');
+            } else if (state.timeSpeed < 1) {
+                document.getElementById('timeRewind').classList.add('active');
+            }
+
+            document.getElementById('timeSpeedDisplay').textContent = state.timeSpeed + 'x Speed';
+        }
+
+        function updateTime() {
+            if (state.isPlaying) {
+                // Advance time by time speed (1 speed = 1 day per second)
+                state.currentDate.setDate(state.currentDate.getDate() + state.timeSpeed / 60);
+            }
+
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').textContent = state.currentDate.toLocaleDateString('en-US', options);
         }
 
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
-            updateInfo();
+            updateTime();
             renderer.render(scene, camera);
         }
 
-        // Handle window resize
+        // Window resize
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
@@ -338,29 +1692,49 @@
 
         // Initialize
         async function init() {
-            const stars = await loadStarData();
+            createStarfieldBackground();
 
-            if (stars.length === 0) {
-                document.getElementById('loading').textContent =
-                    'Error: Could not load star data. Please ensure data/hygdata_v3.csv exists.';
+            state.stars = await loadStarData();
+            if (state.stars.length === 0) {
+                document.getElementById('loading').innerHTML =
+                    '<div class="loading-text">Error: Could not load star data</div>';
                 return;
             }
 
-            const planets = await loadPlanetData();
+            state.planets = await loadPlanetData();
+            state.constellations = await loadConstellationData();
 
-            // Count unique star systems with planets
-            const systems = new Set(planets.map(p => p.star));
+            // Update stats
+            const systems = new Set(state.planets.map(p => p.star));
+            document.getElementById('starCount').textContent = state.stars.length;
+            document.getElementById('planetCount').textContent = state.planets.length;
+            document.getElementById('systemCount').textContent = systems.size;
 
-            document.getElementById('starCount').textContent = stars.length.toLocaleString();
-            document.getElementById('planetCount').textContent = planets.length.toLocaleString();
-            document.getElementById('systemCount').textContent = systems.size.toLocaleString();
-            document.getElementById('loading').style.display = 'none';
+            // Create visualizations
+            createStarField(state.stars);
+            if (state.planets.length > 0) {
+                createPlanets(state.planets, state.stars);
+            }
+            createLabels([...state.stars, ...state.planets]);
 
-            createStarField(stars);
-            if (planets.length > 0) {
-                createPlanets(planets, stars);
+            // Constellations are hidden by default but data is loaded
+            if (state.showConstellations) {
+                createConstellations(state.constellations, state.stars);
             }
 
+            // Setup UI
+            setupUIControls();
+            setupTimeControls();
+            setupBookmarks();
+            setupSearch();
+
+            // Setup help button
+            document.getElementById('helpButton').addEventListener('click', showKeyboardHelp);
+
+            // Hide loading
+            document.getElementById('loading').style.display = 'none';
+
+            // Start animation
             animate();
         }
 
