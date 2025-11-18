@@ -236,9 +236,415 @@ def get_exoplanet_systems():
             'mass_earth': 854,
             'type': 'gas_giant'
         },
+
+        # TRAPPIST-1 system (7 planets!)
+        {
+            'star': 'TRAPPIST-1',
+            'name': 'TRAPPIST-1 b',
+            'semi_major_axis_au': 0.01154,
+            'orbital_period_days': 1.51,
+            'radius_earth': 1.116,
+            'mass_earth': 1.017,
+            'type': 'terrestrial'
+        },
+        {
+            'star': 'TRAPPIST-1',
+            'name': 'TRAPPIST-1 c',
+            'semi_major_axis_au': 0.01580,
+            'orbital_period_days': 2.42,
+            'radius_earth': 1.097,
+            'mass_earth': 1.156,
+            'type': 'terrestrial'
+        },
+        {
+            'star': 'TRAPPIST-1',
+            'name': 'TRAPPIST-1 d',
+            'semi_major_axis_au': 0.02227,
+            'orbital_period_days': 4.05,
+            'radius_earth': 0.788,
+            'mass_earth': 0.297,
+            'type': 'terrestrial'
+        },
+        {
+            'star': 'TRAPPIST-1',
+            'name': 'TRAPPIST-1 e',
+            'semi_major_axis_au': 0.02925,
+            'orbital_period_days': 6.10,
+            'radius_earth': 0.920,
+            'mass_earth': 0.772,
+            'type': 'terrestrial'
+        },
+        {
+            'star': 'TRAPPIST-1',
+            'name': 'TRAPPIST-1 f',
+            'semi_major_axis_au': 0.03849,
+            'orbital_period_days': 9.21,
+            'radius_earth': 1.045,
+            'mass_earth': 0.934,
+            'type': 'terrestrial'
+        },
+        {
+            'star': 'TRAPPIST-1',
+            'name': 'TRAPPIST-1 g',
+            'semi_major_axis_au': 0.04683,
+            'orbital_period_days': 12.35,
+            'radius_earth': 1.129,
+            'mass_earth': 1.148,
+            'type': 'terrestrial'
+        },
+        {
+            'star': 'TRAPPIST-1',
+            'name': 'TRAPPIST-1 h',
+            'semi_major_axis_au': 0.06189,
+            'orbital_period_days': 18.77,
+            'radius_earth': 0.755,
+            'mass_earth': 0.331,
+            'type': 'terrestrial'
+        },
+
+        # Kepler-186 system (first Earth-size planet in habitable zone)
+        {
+            'star': 'Kepler-186',
+            'name': 'Kepler-186 b',
+            'semi_major_axis_au': 0.0343,
+            'orbital_period_days': 3.89,
+            'radius_earth': 1.07,
+            'mass_earth': 1.24,
+            'type': 'terrestrial'
+        },
+        {
+            'star': 'Kepler-186',
+            'name': 'Kepler-186 c',
+            'semi_major_axis_au': 0.0451,
+            'orbital_period_days': 7.27,
+            'radius_earth': 1.25,
+            'mass_earth': 1.76,
+            'type': 'terrestrial'
+        },
+        {
+            'star': 'Kepler-186',
+            'name': 'Kepler-186 d',
+            'semi_major_axis_au': 0.0781,
+            'orbital_period_days': 13.34,
+            'radius_earth': 1.40,
+            'mass_earth': 2.15,
+            'type': 'super_earth'
+        },
+        {
+            'star': 'Kepler-186',
+            'name': 'Kepler-186 e',
+            'semi_major_axis_au': 0.110,
+            'orbital_period_days': 22.41,
+            'radius_earth': 1.27,
+            'mass_earth': 1.84,
+            'type': 'terrestrial'
+        },
+        {
+            'star': 'Kepler-186',
+            'name': 'Kepler-186 f',
+            'semi_major_axis_au': 0.432,
+            'orbital_period_days': 129.9,
+            'radius_earth': 1.11,
+            'mass_earth': 1.44,
+            'type': 'terrestrial'
+        },
+
+        # Kepler-452 (Earth's cousin)
+        {
+            'star': 'Kepler-452',
+            'name': 'Kepler-452 b',
+            'semi_major_axis_au': 1.046,
+            'orbital_period_days': 384.8,
+            'radius_earth': 1.63,
+            'mass_earth': 5.0,
+            'type': 'super_earth'
+        },
+
+        # HD 209458 (Osiris - first transiting exoplanet)
+        {
+            'star': 'HD 209458',
+            'name': 'HD 209458 b',
+            'semi_major_axis_au': 0.04707,
+            'orbital_period_days': 3.525,
+            'radius_earth': 15.3,
+            'mass_earth': 220,
+            'type': 'gas_giant'
+        },
+
+        # 55 Cancri system (5 planets)
+        {
+            'star': '55 Cancri',
+            'name': '55 Cancri b',
+            'semi_major_axis_au': 0.115,
+            'orbital_period_days': 14.65,
+            'radius_earth': 12.9,
+            'mass_earth': 265,
+            'type': 'gas_giant'
+        },
+        {
+            'star': '55 Cancri',
+            'name': '55 Cancri c',
+            'semi_major_axis_au': 0.240,
+            'orbital_period_days': 44.34,
+            'radius_earth': 11.2,
+            'mass_earth': 54,
+            'type': 'gas_giant'
+        },
+        {
+            'star': '55 Cancri',
+            'name': '55 Cancri d',
+            'semi_major_axis_au': 5.77,
+            'orbital_period_days': 5218,
+            'radius_earth': 12.1,
+            'mass_earth': 1180,
+            'type': 'gas_giant'
+        },
+        {
+            'star': '55 Cancri',
+            'name': '55 Cancri e',
+            'semi_major_axis_au': 0.01544,
+            'orbital_period_days': 0.736,
+            'radius_earth': 2.00,
+            'mass_earth': 8.63,
+            'type': 'super_earth'
+        },
+        {
+            'star': '55 Cancri',
+            'name': '55 Cancri f',
+            'semi_major_axis_au': 0.781,
+            'orbital_period_days': 260,
+            'radius_earth': 10.3,
+            'mass_earth': 46,
+            'type': 'gas_giant'
+        },
+
+        # Gliese 876 system (4 planets)
+        {
+            'star': 'Gliese 876',
+            'name': 'Gliese 876 b',
+            'semi_major_axis_au': 0.208,
+            'orbital_period_days': 61.1,
+            'radius_earth': 11.8,
+            'mass_earth': 617,
+            'type': 'gas_giant'
+        },
+        {
+            'star': 'Gliese 876',
+            'name': 'Gliese 876 c',
+            'semi_major_axis_au': 0.130,
+            'orbital_period_days': 30.1,
+            'radius_earth': 10.9,
+            'mass_earth': 219,
+            'type': 'gas_giant'
+        },
+        {
+            'star': 'Gliese 876',
+            'name': 'Gliese 876 d',
+            'semi_major_axis_au': 0.0208,
+            'orbital_period_days': 1.938,
+            'radius_earth': 2.01,
+            'mass_earth': 6.83,
+            'type': 'super_earth'
+        },
+        {
+            'star': 'Gliese 876',
+            'name': 'Gliese 876 e',
+            'semi_major_axis_au': 0.3343,
+            'orbital_period_days': 124.3,
+            'radius_earth': 9.7,
+            'mass_earth': 41,
+            'type': 'gas_giant'
+        },
+
+        # Kepler-22 b (first confirmed planet in habitable zone)
+        {
+            'star': 'Kepler-22',
+            'name': 'Kepler-22 b',
+            'semi_major_axis_au': 0.849,
+            'orbital_period_days': 289.9,
+            'radius_earth': 2.38,
+            'mass_earth': 9.1,
+            'type': 'super_earth'
+        },
+
+        # WASP-12 b (hottest known exoplanet)
+        {
+            'star': 'WASP-12',
+            'name': 'WASP-12 b',
+            'semi_major_axis_au': 0.0229,
+            'orbital_period_days': 1.091,
+            'radius_earth': 19.4,
+            'mass_earth': 446,
+            'type': 'gas_giant'
+        },
+
+        # HD 189733 b (blue planet)
+        {
+            'star': 'HD 189733',
+            'name': 'HD 189733 b',
+            'semi_major_axis_au': 0.03142,
+            'orbital_period_days': 2.219,
+            'radius_earth': 12.4,
+            'mass_earth': 368,
+            'type': 'gas_giant'
+        },
+
+        # Kepler-62 system (5 planets, 2 potentially habitable)
+        {
+            'star': 'Kepler-62',
+            'name': 'Kepler-62 b',
+            'semi_major_axis_au': 0.0553,
+            'orbital_period_days': 5.715,
+            'radius_earth': 1.31,
+            'mass_earth': 2.1,
+            'type': 'terrestrial'
+        },
+        {
+            'star': 'Kepler-62',
+            'name': 'Kepler-62 c',
+            'semi_major_axis_au': 0.0929,
+            'orbital_period_days': 12.44,
+            'radius_earth': 0.54,
+            'mass_earth': 0.1,
+            'type': 'terrestrial'
+        },
+        {
+            'star': 'Kepler-62',
+            'name': 'Kepler-62 d',
+            'semi_major_axis_au': 0.120,
+            'orbital_period_days': 18.16,
+            'radius_earth': 1.95,
+            'mass_earth': 5.5,
+            'type': 'super_earth'
+        },
+        {
+            'star': 'Kepler-62',
+            'name': 'Kepler-62 e',
+            'semi_major_axis_au': 0.427,
+            'orbital_period_days': 122.4,
+            'radius_earth': 1.61,
+            'mass_earth': 4.5,
+            'type': 'super_earth'
+        },
+        {
+            'star': 'Kepler-62',
+            'name': 'Kepler-62 f',
+            'semi_major_axis_au': 0.718,
+            'orbital_period_days': 267.3,
+            'radius_earth': 1.41,
+            'mass_earth': 2.8,
+            'type': 'super_earth'
+        },
     ]
 
     return exoplanets
+
+def get_major_moons():
+    """
+    Add major moons for gas giants in our Solar System.
+    Moon distances are in AU relative to their parent planet.
+    """
+    moons = [
+        # Jupiter's Galilean moons
+        {
+            'star': 'Sol',
+            'planet': 'Jupiter',
+            'name': 'Io',
+            'orbital_distance_km': 421700,  # Distance from Jupiter
+            'radius_earth': 0.286,
+            'mass_earth': 0.015,
+            'type': 'moon'
+        },
+        {
+            'star': 'Sol',
+            'planet': 'Jupiter',
+            'name': 'Europa',
+            'orbital_distance_km': 671034,
+            'radius_earth': 0.245,
+            'mass_earth': 0.008,
+            'type': 'moon'
+        },
+        {
+            'star': 'Sol',
+            'planet': 'Jupiter',
+            'name': 'Ganymede',
+            'orbital_distance_km': 1070412,
+            'radius_earth': 0.413,
+            'mass_earth': 0.025,
+            'type': 'moon'
+        },
+        {
+            'star': 'Sol',
+            'planet': 'Jupiter',
+            'name': 'Callisto',
+            'orbital_distance_km': 1882709,
+            'radius_earth': 0.378,
+            'mass_earth': 0.018,
+            'type': 'moon'
+        },
+
+        # Saturn's major moons
+        {
+            'star': 'Sol',
+            'planet': 'Saturn',
+            'name': 'Titan',
+            'orbital_distance_km': 1221870,
+            'radius_earth': 0.404,
+            'mass_earth': 0.0225,
+            'type': 'moon'
+        },
+        {
+            'star': 'Sol',
+            'planet': 'Saturn',
+            'name': 'Rhea',
+            'orbital_distance_km': 527108,
+            'radius_earth': 0.120,
+            'mass_earth': 0.00039,
+            'type': 'moon'
+        },
+        {
+            'star': 'Sol',
+            'planet': 'Saturn',
+            'name': 'Iapetus',
+            'orbital_distance_km': 3560820,
+            'radius_earth': 0.115,
+            'mass_earth': 0.00030,
+            'type': 'moon'
+        },
+
+        # Earth's Moon
+        {
+            'star': 'Sol',
+            'planet': 'Earth',
+            'name': 'Moon',
+            'orbital_distance_km': 384400,
+            'radius_earth': 0.273,
+            'mass_earth': 0.0123,
+            'type': 'moon'
+        },
+
+        # Mars' moons
+        {
+            'star': 'Sol',
+            'planet': 'Mars',
+            'name': 'Phobos',
+            'orbital_distance_km': 9376,
+            'radius_earth': 0.0018,
+            'mass_earth': 0.000000002,
+            'type': 'moon'
+        },
+        {
+            'star': 'Sol',
+            'planet': 'Mars',
+            'name': 'Deimos',
+            'orbital_distance_km': 23463,
+            'radius_earth': 0.001,
+            'mass_earth': 0.0000000003,
+            'type': 'moon'
+        },
+    ]
+
+    return moons
 
 def load_star_positions():
     """Load star positions from the generated star catalog."""
@@ -302,16 +708,78 @@ def generate_planet_positions(planets, stars):
 
     return planet_data
 
-def write_planet_csv(planet_data, filename):
-    """Write planet data to CSV."""
-    with open(filename, 'w', newline='') as f:
-        fieldnames = ['name', 'star', 'x', 'y', 'z', 'orbit_au', 'period_days',
-                     'radius_earth', 'mass_earth', 'type']
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(planet_data)
+def generate_moon_positions(moons, planet_data, stars):
+    """
+    Generate moon positions in 3D space.
+    Moons orbit their planets.
+    """
+    import random
+    random.seed(43)  # Different seed from planets
 
-    print(f"Written {len(planet_data)} planets to {filename}")
+    moon_data = []
+
+    # Create a map of planet names to positions
+    planet_map = {}
+    for planet in planet_data:
+        planet_map[planet['name']] = {
+            'x': planet['x'],
+            'y': planet['y'],
+            'z': planet['z']
+        }
+
+    for moon in moons:
+        planet_name = moon['planet']
+
+        if planet_name not in planet_map:
+            print(f"Warning: Planet {planet_name} not found, skipping moon {moon['name']}")
+            continue
+
+        planet_pos = planet_map[planet_name]
+
+        # Convert km to AU, then to parsecs
+        orbit_au = moon['orbital_distance_km'] / 149597870.7  # km to AU
+        orbit_radius_pc = au_to_parsecs(orbit_au)
+
+        # Place moon at a random point in its orbit around the planet
+        angle = random.random() * 2 * math.pi
+        inclination = (random.random() - 0.5) * 0.2  # Slightly more varied inclination
+
+        # Calculate moon position relative to planet
+        moon_x = planet_pos['x'] + orbit_radius_pc * math.cos(angle) * math.cos(inclination)
+        moon_y = planet_pos['y'] + orbit_radius_pc * math.sin(angle) * math.cos(inclination)
+        moon_z = planet_pos['z'] + orbit_radius_pc * math.sin(inclination)
+
+        moon_data.append({
+            'name': moon['name'],
+            'star': moon['star'],
+            'planet': planet_name,
+            'x': round(moon_x, 8),
+            'y': round(moon_y, 8),
+            'z': round(moon_z, 8),
+            'orbit_au': round(orbit_au, 8),
+            'period_days': 0,  # We could calculate this
+            'radius_earth': moon['radius_earth'],
+            'mass_earth': moon['mass_earth'],
+            'type': moon['type']
+        })
+
+    return moon_data
+
+def write_planet_csv(planet_data, filename):
+    """Write planet and moon data to CSV."""
+    with open(filename, 'w', newline='') as f:
+        fieldnames = ['name', 'star', 'planet', 'x', 'y', 'z', 'orbit_au', 'period_days',
+                     'radius_earth', 'mass_earth', 'type']
+        writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
+        writer.writeheader()
+
+        # Write data, adding empty 'planet' field for planets
+        for item in planet_data:
+            if 'planet' not in item:
+                item['planet'] = ''
+            writer.writerow(item)
+
+    print(f"Written {len(planet_data)} celestial bodies to {filename}")
 
 if __name__ == "__main__":
     print("Generating planetary systems from real data...")
@@ -323,19 +791,38 @@ if __name__ == "__main__":
     # Get all planets
     all_planets = get_solar_system_planets() + get_exoplanet_systems()
 
-    # Generate positions
+    # Generate planet positions
     planet_data = generate_planet_positions(all_planets, stars)
 
+    # Get moons and generate their positions
+    all_moons = get_major_moons()
+    moon_data = generate_moon_positions(all_moons, planet_data, stars)
+
+    # Combine planets and moons
+    all_celestial_bodies = planet_data + moon_data
+
     # Write to file
-    write_planet_csv(planet_data, 'data/planets.csv')
+    write_planet_csv(all_celestial_bodies, 'data/planets.csv')
 
     # Summary
     print(f"\nTotal planets: {len(planet_data)}")
+    print(f"Total moons: {len(moon_data)}")
+    print(f"Total celestial bodies: {len(all_celestial_bodies)}")
+
     systems = {}
     for p in planet_data:
         systems[p['star']] = systems.get(p['star'], 0) + 1
 
-    print(f"Total systems: {len(systems)}")
+    print(f"\nTotal planetary systems: {len(systems)}")
     print("\nSystems:")
     for star, count in sorted(systems.items(), key=lambda x: -x[1]):
         print(f"  {star}: {count} planet(s)")
+
+    # Moon summary
+    moon_parents = {}
+    for m in moon_data:
+        moon_parents[m['planet']] = moon_parents.get(m['planet'], 0) + 1
+
+    print(f"\nMoons by planet:")
+    for planet, count in sorted(moon_parents.items(), key=lambda x: -x[1]):
+        print(f"  {planet}: {count} moon(s)")
