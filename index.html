@@ -262,6 +262,16 @@
             <label>View Options</label>
             <button id="toggleOrbits" class="active" onclick="toggleOrbits()">Orbits</button>
             <button id="toggleLabels" onclick="toggleLabels()">Labels</button>
+            <button id="toggleConstellations" onclick="toggleConstellations()">Constellations</button>
+        </div>
+        <div class="control-group">
+            <label>Time Simulation</label>
+            <button id="playPause" class="active" onclick="toggleTimeSimulation()">⏸ Pause</button>
+            <button onclick="changeTimeSpeed(-1)">◀ Slower</button>
+            <button onclick="changeTimeSpeed(1)">Faster ▶</button>
+            <div style="color: #999; font-size: 11px; margin-top: 5px;">
+                Speed: <span id="timeSpeedDisplay">1x</span>
+            </div>
         </div>
     </div>
 
@@ -277,6 +287,9 @@
     <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
         // Scene setup
         const scene = new THREE.Scene();
@@ -285,6 +298,19 @@
 
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
+
+        // Post-processing for bloom effect
+        const composer = new EffectComposer(renderer);
+        const renderPass = new RenderPass(scene, camera);
+        composer.addPass(renderPass);
+
+        const bloomPass = new UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            0.5,  // strength
+            0.4,  // radius
+            0.85  // threshold
+        );
+        composer.addPass(bloomPass);
 
         // Camera controls
         const controls = new OrbitControls(camera, renderer.domElement);
@@ -307,6 +333,13 @@
         let hoveredObject = null;
         let showOrbits = true;
         let showLabels = false;
+
+        // Time simulation state
+        let timeSimulationActive = true;
+        let simulatedTime = 0;  // In Earth days
+        let timeSpeed = 1;  // Multiplier (1 = 1 day per second)
+        const timeSpeedLevels = [0.1, 0.5, 1, 2, 5, 10, 50, 100, 500, 1000];
+        let timeSpeedIndex = 2;  // Start at 1x
 
         // Raycaster for object picking
         const raycaster = new THREE.Raycaster();
@@ -452,6 +485,93 @@
         }
 
         const asteroidBelt = createAsteroidBelt();
+
+        // Create constellation lines
+        function createConstellations() {
+            const constellationGroup = new THREE.Group();
+
+            // Define major constellations by star names
+            const constellations = [
+                {
+                    name: 'Orion',
+                    stars: [
+                        ['Betelgeuse', 'Bellatrix'],
+                        ['Bellatrix', 'Rigel'],
+                        ['Rigel', 'Betelgeuse'],
+                        ['Alnilam', 'Alnitak'],  // Belt
+                        ['Alnitak', 'Mintaka'],
+                        ['Betelgeuse', 'Alnilam'],
+                        ['Rigel', 'Alnilam']
+                    ],
+                    color: 0x4477aa
+                },
+                {
+                    name: 'Ursa Major (Big Dipper)',
+                    stars: [
+                        ['Dubhe', 'Alkaid'],
+                        ['Alkaid', 'Alioth'],
+                        ['Alioth', 'Dubhe']
+                    ],
+                    color: 0x44aa77
+                },
+                {
+                    name: 'Cassiopeia',
+                    stars: [
+                        ['Schedar', 'Caph']
+                    ],
+                    color: 0xaa4477
+                },
+                {
+                    name: 'Canis Major',
+                    stars: [
+                        ['Sirius', 'Adhara'],
+                        ['Adhara', 'Wezen'],
+                        ['Wezen', 'Sirius'],
+                        ['Mirzam', 'Sirius']
+                    ],
+                    color: 0x77aa44
+                }
+            ];
+
+            // Create a map of star names to positions
+            const starPositions = {};
+            starsData.forEach(star => {
+                if (star.name) {
+                    starPositions[star.name] = new THREE.Vector3(
+                        star.x * 10,
+                        star.y * 10,
+                        star.z * 10
+                    );
+                }
+            });
+
+            // Draw constellation lines
+            constellations.forEach(constellation => {
+                constellation.stars.forEach(([star1, star2]) => {
+                    const pos1 = starPositions[star1];
+                    const pos2 = starPositions[star2];
+
+                    if (pos1 && pos2) {
+                        const points = [pos1, pos2];
+                        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                        const material = new THREE.LineBasicMaterial({
+                            color: constellation.color,
+                            transparent: true,
+                            opacity: 0.3,
+                            linewidth: 1
+                        });
+                        const line = new THREE.Line(geometry, material);
+                        constellationGroup.add(line);
+                    }
+                });
+            });
+
+            constellationGroup.visible = false;  // Hidden by default
+            scene.add(constellationGroup);
+            return constellationGroup;
+        }
+
+        let constellationLines = null;
 
         // Mouse event handlers
         function onMouseMove(event) {
@@ -776,6 +896,65 @@
             document.getElementById('toggleLabels').classList.toggle('active');
         };
 
+        window.toggleConstellations = function() {
+            if (constellationLines) {
+                constellationLines.visible = !constellationLines.visible;
+                document.getElementById('toggleConstellations').classList.toggle('active');
+            }
+        };
+
+        window.toggleTimeSimulation = function() {
+            timeSimulationActive = !timeSimulationActive;
+            const button = document.getElementById('playPause');
+            button.textContent = timeSimulationActive ? '⏸ Pause' : '▶ Play';
+            button.classList.toggle('active');
+        };
+
+        window.changeTimeSpeed = function(direction) {
+            timeSpeedIndex = Math.max(0, Math.min(timeSpeedLevels.length - 1, timeSpeedIndex + direction));
+            timeSpeed = timeSpeedLevels[timeSpeedIndex];
+            document.getElementById('timeSpeedDisplay').textContent = `${timeSpeed}x`;
+        };
+
+        // Update planetary positions based on orbital mechanics
+        function updateOrbitalPositions(deltaTime) {
+            if (!timeSimulationActive) return;
+
+            // Update simulated time (deltaTime is in seconds, convert to days)
+            simulatedTime += deltaTime * timeSpeed * 60;  // 60x speed up for visibility
+
+            // Update each planet
+            planetObjects.forEach((planetMesh, index) => {
+                const planetData = planetMesh.userData;
+
+                // Skip moons for now (they need special handling)
+                if (planetData.type === 'moon' || planetData.planet) return;
+
+                // Find the star position
+                const star = starsData.find(s => s.name === planetData.star);
+                if (!star) return;
+
+                const starPos = { x: star.x * 10, y: star.y * 10, z: star.z * 10 };
+
+                // Calculate orbital position
+                const period = planetData.period_days;
+                if (!period || period === 0) return;
+
+                const orbitRadius = planetData.orbit_au * 4.84814e-6 * 10;  // AU to parsecs, scaled
+
+                // Calculate angle based on time and period
+                const angle = (simulatedTime / period) * 2 * Math.PI;
+
+                // Calculate position (simplified circular orbit in XY plane)
+                const x = starPos.x + orbitRadius * Math.cos(angle);
+                const y = starPos.y + orbitRadius * Math.sin(angle);
+                const z = starPos.z;
+
+                // Update planet position
+                planetMesh.position.set(x, y, z);
+            });
+        }
+
         // Function to convert spectral class to color
         function getStarColor(spectralClass) {
             if (!spectralClass) return 0xffffff;
@@ -1082,8 +1261,14 @@
 
         // Animation loop
         let time = 0;
+        let lastTime = Date.now();
         function animate() {
             requestAnimationFrame(animate);
+
+            const currentTime = Date.now();
+            const deltaTime = (currentTime - lastTime) / 1000;  // Convert to seconds
+            lastTime = currentTime;
+
             time += 0.01;
 
             // Update skybox
@@ -1091,9 +1276,12 @@
                 spaceBackground.material.uniforms.time.value = time;
             }
 
+            // Update orbital positions
+            updateOrbitalPositions(deltaTime);
+
             controls.update();
             updateInfo();
-            renderer.render(scene, camera);
+            composer.render();
         }
 
         // Handle window resize
@@ -1101,6 +1289,7 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
         });
 
         // Initialize
@@ -1128,6 +1317,7 @@
                 createPlanets(planetsData, starsData);
             }
             createLabels(starsData, planetsData);
+            constellationLines = createConstellations();
 
             animate();
         }
