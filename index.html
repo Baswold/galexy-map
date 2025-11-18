@@ -5,26 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Galaxy Forge - 3D Star Map</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             overflow: hidden;
             background: #000;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
         }
+
         canvas {
             display: block;
         }
+
+        /* Info Panel (Top Left) */
         #info {
             position: absolute;
             top: 10px;
             left: 10px;
             color: #fff;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 15px;
+            border-radius: 8px;
             font-size: 14px;
             max-width: 300px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
+
+        #info strong {
+            color: #4da6ff;
+            font-size: 16px;
+        }
+
+        /* Loading Screen */
         #loading {
             position: absolute;
             top: 50%;
@@ -32,9 +50,208 @@
             transform: translate(-50%, -50%);
             color: #fff;
             font-size: 24px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px 40px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(77, 166, 255, 0.3);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Detail Panel (Right Side) */
+        .detail-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 350px;
+            max-height: 80vh;
+            background: rgba(0, 0, 0, 0.9);
             border-radius: 10px;
+            overflow-y: auto;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+
+        .info-panel-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(135deg, rgba(77, 166, 255, 0.2), rgba(0, 0, 0, 0.3));
+        }
+
+        .info-panel-header h2 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            color: #4da6ff;
+        }
+
+        .object-type {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(77, 166, 255, 0.3);
+            border-radius: 12px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-panel-content {
+            padding: 20px;
+        }
+
+        .info-row {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            color: #fff;
+            font-size: 14px;
+        }
+
+        /* Keyboard Shortcuts Overlay */
+        .shortcuts-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .shortcuts-panel {
+            background: rgba(20, 20, 20, 0.95);
+            border-radius: 12px;
+            padding: 0;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.8);
+        }
+
+        .shortcuts-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(77, 166, 255, 0.2), rgba(0, 0, 0, 0.3));
+        }
+
+        .shortcuts-header h2 {
+            margin: 0;
+            color: #4da6ff;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 32px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .shortcuts-content {
+            padding: 20px;
+        }
+
+        .shortcuts-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .shortcuts-table tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .shortcuts-table td {
+            padding: 12px 10px;
+        }
+
+        .shortcut-key {
+            color: #4da6ff;
+            font-weight: bold;
+            white-space: nowrap;
+            width: 150px;
+        }
+
+        .shortcut-description {
+            color: #ccc;
+        }
+
+        /* Help Button */
+        .help-button {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            background: rgba(77, 166, 255, 0.8);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+
+        .help-button:hover {
+            background: rgba(77, 166, 255, 1);
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Scrollbar Styling */
+        .detail-panel::-webkit-scrollbar,
+        .shortcuts-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .detail-panel::-webkit-scrollbar-track,
+        .shortcuts-panel::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .detail-panel::-webkit-scrollbar-thumb,
+        .shortcuts-panel::-webkit-scrollbar-thumb {
+            background: rgba(77, 166, 255, 0.5);
+            border-radius: 4px;
+        }
+
+        .detail-panel::-webkit-scrollbar-thumb:hover,
+        .shortcuts-panel::-webkit-scrollbar-thumb:hover {
+            background: rgba(77, 166, 255, 0.7);
         }
     </style>
 </head>
@@ -51,6 +268,8 @@
         <span id="cameraPos"></span>
     </div>
 
+    <button class="help-button" onclick="document.dispatchEvent(new KeyboardEvent('keydown', {key: '?'}))">?</button>
+
     <script type="importmap">
     {
         "imports": {
@@ -60,311 +279,6 @@
     }
     </script>
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
-        // Scene setup
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-
-        // Camera controls
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.maxDistance = 50000;
-        controls.minDistance = 1;
-
-        // Set initial camera position
-        camera.position.set(0, 100, 200);
-        controls.update();
-
-        // Add ambient light for better visibility
-        const ambientLight = new THREE.AmbientLight(0x333333);
-        scene.add(ambientLight);
-
-        // Function to convert spectral class to color
-        function getStarColor(spectralClass) {
-            if (!spectralClass) return 0xffffff;
-            const type = spectralClass.charAt(0).toUpperCase();
-
-            // Based on actual stellar spectral classifications
-            const colorMap = {
-                'O': 0x9bb0ff, // Blue
-                'B': 0xaabfff, // Blue-white
-                'A': 0xcad7ff, // White
-                'F': 0xf8f7ff, // Yellow-white
-                'G': 0xfff4ea, // Yellow (like our Sun)
-                'K': 0xffd2a1, // Orange
-                'M': 0xffcc6f, // Red-orange
-            };
-
-            return colorMap[type] || 0xffffff;
-        }
-
-        // Load star data
-        async function loadStarData() {
-            try {
-                const response = await fetch('data/hygdata_v3.csv');
-                const csvText = await response.text();
-
-                const lines = csvText.split('\n');
-                const headers = lines[0].split(',');
-
-                // Find column indices
-                const xIndex = headers.indexOf('x');
-                const yIndex = headers.indexOf('y');
-                const zIndex = headers.indexOf('z');
-                const magIndex = headers.indexOf('mag');
-                const specIndex = headers.indexOf('spect');
-                const properNameIndex = headers.indexOf('proper');
-
-                const stars = [];
-
-                // Parse CSV (skip header)
-                for (let i = 1; i < lines.length; i++) {
-                    if (!lines[i].trim()) continue;
-
-                    const cols = lines[i].split(',');
-
-                    const x = parseFloat(cols[xIndex]);
-                    const y = parseFloat(cols[yIndex]);
-                    const z = parseFloat(cols[zIndex]);
-                    const mag = parseFloat(cols[magIndex]);
-                    const spect = cols[specIndex];
-                    const name = cols[properNameIndex];
-
-                    if (!isNaN(x) && !isNaN(y) && !isNaN(z)) {
-                        stars.push({ x, y, z, mag, spect, name });
-                    }
-                }
-
-                return stars;
-            } catch (error) {
-                console.error('Error loading star data:', error);
-                return [];
-            }
-        }
-
-        // Load planet data
-        async function loadPlanetData() {
-            try {
-                const response = await fetch('data/planets.csv');
-                const csvText = await response.text();
-
-                const lines = csvText.split('\n');
-                const headers = lines[0].split(',');
-
-                // Find column indices
-                const nameIndex = headers.indexOf('name');
-                const starIndex = headers.indexOf('star');
-                const xIndex = headers.indexOf('x');
-                const yIndex = headers.indexOf('y');
-                const zIndex = headers.indexOf('z');
-                const orbitIndex = headers.indexOf('orbit_au');
-                const radiusIndex = headers.indexOf('radius_earth');
-                const typeIndex = headers.indexOf('type');
-
-                const planets = [];
-
-                // Parse CSV (skip header)
-                for (let i = 1; i < lines.length; i++) {
-                    if (!lines[i].trim()) continue;
-
-                    const cols = lines[i].split(',');
-
-                    const x = parseFloat(cols[xIndex]);
-                    const y = parseFloat(cols[yIndex]);
-                    const z = parseFloat(cols[zIndex]);
-                    const name = cols[nameIndex];
-                    const star = cols[starIndex];
-                    const orbit = parseFloat(cols[orbitIndex]);
-                    const radius = parseFloat(cols[radiusIndex]);
-                    const type = cols[typeIndex];
-
-                    if (!isNaN(x) && !isNaN(y) && !isNaN(z)) {
-                        planets.push({ x, y, z, name, star, orbit, radius, type });
-                    }
-                }
-
-                return planets;
-            } catch (error) {
-                console.error('Error loading planet data:', error);
-                return [];
-            }
-        }
-
-        // Get planet color based on type
-        function getPlanetColor(type) {
-            const colorMap = {
-                'terrestrial': 0x8b7355,      // Brown/rocky
-                'super_earth': 0x5588aa,      // Blue-gray
-                'gas_giant': 0xdaa520,        // Golden/orange
-                'ice_giant': 0x4682b4,        // Steel blue
-            };
-            return colorMap[type] || 0x888888;
-        }
-
-        // Create star visualization
-        function createStarField(stars) {
-            const geometry = new THREE.BufferGeometry();
-            const positions = [];
-            const colors = [];
-            const sizes = [];
-
-            stars.forEach(star => {
-                // Position (scale coordinates for better visibility)
-                positions.push(star.x * 10, star.y * 10, star.z * 10);
-
-                // Color based on spectral class
-                const color = new THREE.Color(getStarColor(star.spect));
-                colors.push(color.r, color.g, color.b);
-
-                // Size based on apparent magnitude (brighter = bigger)
-                // Magnitude scale is inverted (lower = brighter)
-                const brightness = Math.max(0.5, 8 - star.mag);
-                sizes.push(brightness);
-            });
-
-            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-            geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
-
-            // Custom shader material for better star rendering
-            const material = new THREE.PointsMaterial({
-                size: 2,
-                vertexColors: true,
-                sizeAttenuation: true,
-                transparent: true,
-                opacity: 0.9,
-                blending: THREE.AdditiveBlending
-            });
-
-            const points = new THREE.Points(geometry, material);
-            scene.add(points);
-
-            return points;
-        }
-
-        // Create planet visualization
-        function createPlanets(planets, stars) {
-            const planetGroup = new THREE.Group();
-
-            // Create a map of star names to positions for orbit drawing
-            const starMap = {};
-            stars.forEach(star => {
-                starMap[star.name] = { x: star.x * 10, y: star.y * 10, z: star.z * 10 };
-            });
-
-            planets.forEach(planet => {
-                // Create planet sphere
-                const radius = Math.max(0.5, Math.log(planet.radius + 1) * 0.3);
-                const geometry = new THREE.SphereGeometry(radius, 16, 16);
-                const material = new THREE.MeshBasicMaterial({
-                    color: getPlanetColor(planet.type),
-                    transparent: true,
-                    opacity: 0.9
-                });
-                const sphere = new THREE.Mesh(geometry, material);
-
-                // Position (scale to match stars)
-                sphere.position.set(planet.x * 10, planet.y * 10, planet.z * 10);
-                sphere.userData = planet; // Store planet data
-                planetGroup.add(sphere);
-
-                // Draw orbit path
-                if (starMap[planet.star]) {
-                    const starPos = starMap[planet.star];
-                    const orbitRadius = planet.orbit * 4.84814e-6 * 10; // AU to parsecs, scaled
-
-                    const orbitCurve = new THREE.EllipseCurve(
-                        starPos.x, starPos.y,  // Center
-                        orbitRadius, orbitRadius,  // X and Y radius
-                        0, 2 * Math.PI,  // Start and end angle
-                        false,
-                        0
-                    );
-
-                    const points = orbitCurve.getPoints(64);
-                    const orbitGeometry = new THREE.BufferGeometry();
-                    const orbitPositions = [];
-
-                    points.forEach(p => {
-                        orbitPositions.push(p.x, starPos.z, p.y);
-                    });
-
-                    orbitGeometry.setAttribute('position', new THREE.Float32BufferAttribute(orbitPositions, 3));
-
-                    const orbitMaterial = new THREE.LineBasicMaterial({
-                        color: 0x444444,
-                        transparent: true,
-                        opacity: 0.3
-                    });
-
-                    const orbitLine = new THREE.Line(orbitGeometry, orbitMaterial);
-                    planetGroup.add(orbitLine);
-                }
-            });
-
-            scene.add(planetGroup);
-            return planetGroup;
-        }
-
-        // Update info display
-        function updateInfo() {
-            const pos = camera.position;
-            document.getElementById('cameraPos').textContent =
-                `Position: (${pos.x.toFixed(1)}, ${pos.y.toFixed(1)}, ${pos.z.toFixed(1)})`;
-        }
-
-        // Animation loop
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            updateInfo();
-            renderer.render(scene, camera);
-        }
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        // Initialize
-        async function init() {
-            const stars = await loadStarData();
-
-            if (stars.length === 0) {
-                document.getElementById('loading').textContent =
-                    'Error: Could not load star data. Please ensure data/hygdata_v3.csv exists.';
-                return;
-            }
-
-            const planets = await loadPlanetData();
-
-            // Count unique star systems with planets
-            const systems = new Set(planets.map(p => p.star));
-
-            document.getElementById('starCount').textContent = stars.length.toLocaleString();
-            document.getElementById('planetCount').textContent = planets.length.toLocaleString();
-            document.getElementById('systemCount').textContent = systems.size.toLocaleString();
-            document.getElementById('loading').style.display = 'none';
-
-            createStarField(stars);
-            if (planets.length > 0) {
-                createPlanets(planets, stars);
-            }
-
-            animate();
-        }
-
-        init();
-    </script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>

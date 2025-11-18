@@ -83,12 +83,67 @@ All 8 planets in their correct orbital positions:
 - **Vega** - Brilliant blue-white star (25 ly)
 - **Arcturus** - Orange giant (36.7 ly)
 
+## Interactive Features
+
+### Click & Explore
+- **Click on stars and planets** to see detailed information
+- **Info panel** shows:
+  - Star: Spectral class, temperature, magnitude, distance
+  - Planet: Type, orbital data, mass, radius
+- **Hover effects** with smooth highlighting
+
+### Keyboard Shortcuts
+Press **?** or **H** to see all shortcuts:
+- **?** / **H** - Show keyboard shortcuts help
+- **Escape** - Close info panels
+- **Home** - Reset camera to initial position
+- **Ctrl+F** - Focus search box (ready for future search feature)
+
+### Search & Filter (Backend Ready)
+The codebase includes a complete search and filter system:
+- Search stars by name
+- Filter by spectral type (O, B, A, F, G, K, M)
+- Filter by magnitude and distance
+- Filter planets by type
+
+## Code Architecture
+
+### JavaScript Modules (Clean & Organized)
+- **constants.js** - All configuration and magic numbers
+- **colors.js** - Star and planet color management
+- **data-loader.js** - CSV parsing and data loading
+- **star-renderer.js** - Star field visualization
+- **planet-renderer.js** - Planet and orbit rendering
+- **scene-manager.js** - Three.js scene setup
+- **ui-manager.js** - UI updates and statistics
+- **interaction-manager.js** - Click/hover interactions
+- **info-panel.js** - Detailed object information
+- **search-filter.js** - Search and filtering engine
+- **keyboard-shortcuts.js** - Keyboard hotkey system
+- **main.js** - Application initialization
+
+### Python Scripts (Type-Safe & Documented)
+- **fetch_star_data.py** - Star catalog generator with type hints
+- **generate_planets.py** - Planet system generator with full documentation
+
+## Code Quality Features
+
+✓ **Modular Architecture** - Clean separation of concerns
+✓ **Type Hints** - Full Python type annotations
+✓ **Comprehensive Documentation** - JSDoc and docstrings
+✓ **Error Handling** - Robust validation throughout
+✓ **Constants Management** - No magic numbers
+✓ **Beautiful UI** - Modern glassmorphism design
+✓ **Interactive** - Click, hover, and keyboard controls
+✓ **Extensible** - Easy to add new features
+
 ## Next Steps
 
-This is the foundation. Coming next:
+Future enhancements:
 - More stars (millions from Gaia catalog)
-- Procedural star systems
-- Planetary generation
+- Real-time orbital animation
+- Search UI implementation
 - Galaxy structure (spiral arms, core)
 - Time controls (see stellar motion)
 - VR support
+- Performance optimizations (LOD, instancing)
