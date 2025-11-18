@@ -208,6 +208,45 @@
             background: #4da6ff;
             color: #000;
         }
+        #filterPanel {
+            position: absolute;
+            top: 350px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            min-width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        #filterPanel h3 {
+            margin: 0 0 10px 0;
+            color: #4da6ff;
+            font-size: 14px;
+        }
+        .filter-group {
+            margin: 15px 0;
+        }
+        .filter-group label {
+            display: block;
+            color: #999;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        .filter-checkbox {
+            margin: 5px 0;
+        }
+        .filter-checkbox input {
+            margin-right: 8px;
+        }
+        .filter-checkbox label {
+            display: inline;
+            color: #ccc;
+            font-size: 13px;
+        }
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -251,6 +290,51 @@
 
     <div id="tooltip"></div>
 
+    <div id="filterPanel">
+        <h3>⚙ Filters</h3>
+        <div class="filter-group">
+            <label>Spectral Types</label>
+            <div class="filter-checkbox">
+                <input type="checkbox" id="filter-O" checked onchange="updateFilters()">
+                <label for="filter-O">O - Blue (Hot)</label>
+            </div>
+            <div class="filter-checkbox">
+                <input type="checkbox" id="filter-B" checked onchange="updateFilters()">
+                <label for="filter-B">B - Blue-white</label>
+            </div>
+            <div class="filter-checkbox">
+                <input type="checkbox" id="filter-A" checked onchange="updateFilters()">
+                <label for="filter-A">A - White</label>
+            </div>
+            <div class="filter-checkbox">
+                <input type="checkbox" id="filter-F" checked onchange="updateFilters()">
+                <label for="filter-F">F - Yellow-white</label>
+            </div>
+            <div class="filter-checkbox">
+                <input type="checkbox" id="filter-G" checked onchange="updateFilters()">
+                <label for="filter-G">G - Yellow (Sun-like)</label>
+            </div>
+            <div class="filter-checkbox">
+                <input type="checkbox" id="filter-K" checked onchange="updateFilters()">
+                <label for="filter-K">K - Orange</label>
+            </div>
+            <div class="filter-checkbox">
+                <input type="checkbox" id="filter-M" checked onchange="updateFilters()">
+                <label for="filter-M">M - Red (Cool)</label>
+            </div>
+        </div>
+        <div class="filter-group">
+            <label>Distance Range</label>
+            <input type="range" id="maxDistance" min="1" max="1000" value="1000" step="10" style="width: 100%;" onchange="updateFilters()">
+            <div style="color: #999; font-size: 11px;">Max: <span id="maxDistDisplay">1000</span> parsecs</div>
+        </div>
+        <div class="filter-group">
+            <label>Brightness (Magnitude)</label>
+            <input type="range" id="maxMagnitude" min="-2" max="20" value="20" step="0.5" style="width: 100%;" onchange="updateFilters()">
+            <div style="color: #999; font-size: 11px;">Max: <span id="maxMagDisplay">20</span></div>
+        </div>
+    </div>
+
     <div id="controlPanel">
         <div class="control-group">
             <label>Quick Navigation</label>
@@ -271,6 +355,14 @@
             <button onclick="changeTimeSpeed(1)">Faster ▶</button>
             <div style="color: #999; font-size: 11px; margin-top: 5px;">
                 Speed: <span id="timeSpeedDisplay">1x</span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Tools</label>
+            <button id="measureBtn" onclick="toggleMeasureTool()">📏 Measure Distance</button>
+            <button onclick="takeScreenshot()">📷 Screenshot</button>
+            <div id="measureResult" style="color: #4da6ff; font-size: 11px; margin-top: 5px; display: none;">
+                Distance: <span id="distanceValue"></span>
             </div>
         </div>
     </div>
@@ -340,6 +432,12 @@
         let timeSpeed = 1;  // Multiplier (1 = 1 day per second)
         const timeSpeedLevels = [0.1, 0.5, 1, 2, 5, 10, 50, 100, 500, 1000];
         let timeSpeedIndex = 2;  // Start at 1x
+
+        // Measurement tool state
+        let measureMode = false;
+        let measurePoint1 = null;
+        let measurePoint2 = null;
+        let measureLine = null;
 
         // Raycaster for object picking
         const raycaster = new THREE.Raycaster();
@@ -616,12 +714,98 @@
         function onClick(event) {
             if (!hoveredObject) return;
 
+            // Handle measurement mode
+            if (measureMode) {
+                let clickedPos = null;
+                let clickedName = '';
+
+                if (hoveredObject.type === 'star') {
+                    const star = hoveredObject.data;
+                    clickedPos = new THREE.Vector3(star.x * 10, star.y * 10, star.z * 10);
+                    clickedName = star.name || `Star ${hoveredObject.index}`;
+                } else {
+                    const planet = hoveredObject.userData;
+                    clickedPos = hoveredObject.position.clone();
+                    clickedName = planet.name;
+                }
+
+                if (!measurePoint1) {
+                    measurePoint1 = { pos: clickedPos, name: clickedName };
+                } else {
+                    measurePoint2 = { pos: clickedPos, name: clickedName };
+
+                    // Calculate distance
+                    const distance = measurePoint1.pos.distanceTo(measurePoint2.pos);
+                    const distancePc = distance / 10;  // Convert back to parsecs
+                    const distanceLy = distancePc * 3.26;  // Convert to light years
+
+                    // Display result
+                    document.getElementById('measureResult').style.display = 'block';
+                    document.getElementById('distanceValue').textContent =
+                        `${distancePc.toFixed(3)} pc (${distanceLy.toFixed(2)} ly) - ${measurePoint1.name} to ${measurePoint2.name}`;
+
+                    // Draw line
+                    if (measureLine) {
+                        scene.remove(measureLine);
+                    }
+
+                    const points = [measurePoint1.pos, measurePoint2.pos];
+                    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                    const material = new THREE.LineBasicMaterial({
+                        color: 0xffff00,
+                        linewidth: 2
+                    });
+                    measureLine = new THREE.Line(geometry, material);
+                    scene.add(measureLine);
+
+                    // Reset for next measurement
+                    measurePoint1 = null;
+                    measurePoint2 = null;
+                }
+                return;
+            }
+
+            // Normal selection
             if (hoveredObject.type === 'star') {
                 showStarDetails(hoveredObject.data);
             } else {
                 showPlanetDetails(hoveredObject.userData);
             }
         }
+
+        window.toggleMeasureTool = function() {
+            measureMode = !measureMode;
+            const btn = document.getElementById('measureBtn');
+
+            if (measureMode) {
+                btn.classList.add('active');
+                btn.textContent = '📏 Measuring... (Click 2 objects)';
+                measurePoint1 = null;
+                measurePoint2 = null;
+            } else {
+                btn.classList.remove('active');
+                btn.textContent = '📏 Measure Distance';
+                document.getElementById('measureResult').style.display = 'none';
+
+                // Remove measurement line
+                if (measureLine) {
+                    scene.remove(measureLine);
+                    measureLine = null;
+                }
+            }
+        };
+
+        window.takeScreenshot = function() {
+            // Render current frame
+            composer.render();
+
+            // Get canvas and download
+            const canvas = renderer.domElement;
+            const link = document.createElement('a');
+            link.download = `galaxy-forge-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        };
 
         window.addEventListener('mousemove', onMouseMove);
         window.addEventListener('click', onClick);
@@ -1092,14 +1276,23 @@
             return colorMap[type] || 0x888888;
         }
 
-        // Create star visualization
-        function createStarField(stars) {
+        // Create star visualization with filters
+        function createStarField(stars, filters = null) {
+            // Remove old star field if it exists
+            if (starObjects.length > 0) {
+                starObjects.forEach(obj => scene.remove(obj));
+                starObjects = [];
+            }
+
             const geometry = new THREE.BufferGeometry();
             const positions = [];
             const colors = [];
             const sizes = [];
 
-            stars.forEach(star => {
+            // Apply filters if provided
+            const filteredStars = filters ? applyStarFilters(stars, filters) : stars;
+
+            filteredStars.forEach(star => {
                 // Position (scale coordinates for better visibility)
                 positions.push(star.x * 10, star.y * 10, star.z * 10);
 
@@ -1133,6 +1326,59 @@
 
             return points;
         }
+
+        // Apply filters to stars
+        function applyStarFilters(stars, filters) {
+            return stars.filter(star => {
+                // Check spectral type
+                if (star.spect) {
+                    const type = star.spect.charAt(0).toUpperCase();
+                    if (filters.spectralTypes && !filters.spectralTypes.includes(type)) {
+                        return false;
+                    }
+                }
+
+                // Check distance
+                if (filters.maxDistance && star.dist > filters.maxDistance) {
+                    return false;
+                }
+
+                // Check magnitude
+                if (filters.maxMagnitude && star.mag > filters.maxMagnitude) {
+                    return false;
+                }
+
+                return true;
+            });
+        }
+
+        // Update filters based on UI controls
+        window.updateFilters = function() {
+            // Get selected spectral types
+            const spectralTypes = [];
+            ['O', 'B', 'A', 'F', 'G', 'K', 'M'].forEach(type => {
+                if (document.getElementById(`filter-${type}`).checked) {
+                    spectralTypes.push(type);
+                }
+            });
+
+            // Get distance and magnitude limits
+            const maxDistance = parseFloat(document.getElementById('maxDistance').value);
+            const maxMagnitude = parseFloat(document.getElementById('maxMagnitude').value);
+
+            // Update display
+            document.getElementById('maxDistDisplay').textContent = maxDistance;
+            document.getElementById('maxMagDisplay').textContent = maxMagnitude.toFixed(1);
+
+            // Apply filters
+            const filters = {
+                spectralTypes,
+                maxDistance,
+                maxMagnitude
+            };
+
+            createStarField(starsData, filters);
+        };
 
         // Create planet visualization
         function createPlanets(planets, stars) {
